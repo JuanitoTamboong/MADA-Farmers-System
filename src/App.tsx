@@ -4,29 +4,25 @@ import LoginScreen from "./components/LoginScreen";
 import FarmerDashboard from "./components/FarmerDashboard";
 import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
-import AddFarmModal from "./components/AddFarmModal";
 import { LoadingProvider } from "./context/LoadingContext";
 
-function App() {
-  const [screen, setScreen] = useState<
-    "welcome" | "login" | "dashboard" | "farms" | "farm-details"
-  >("welcome");
+type Screen = "welcome" | "login" | "dashboard" | "farms" | "farm-details";
 
-  // State to hold selected farm ID and control Add Farm modal display
+function App() {
+  const [screen, setScreen] = useState<Screen>("welcome");
   const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
   return (
     <LoadingProvider>
       <div className="app-container">
-        {/* WELCOME SCREEN */}
+        {/* WELCOME */}
         {screen === "welcome" && (
           <div key="welcome" className="page-transition">
             <WelcomeScreen onGetStarted={() => setScreen("login")} />
           </div>
         )}
 
-        {/* LOGIN SCREEN */}
+        {/* LOGIN */}
         {screen === "login" && (
           <div key="login" className="page-transition">
             <LoginScreen
@@ -36,7 +32,7 @@ function App() {
           </div>
         )}
 
-        {/* FARMER DASHBOARD */}
+        {/* DASHBOARD */}
         {screen === "dashboard" && (
           <div key="dashboard" className="page-transition">
             <FarmerDashboard
@@ -48,11 +44,10 @@ function App() {
           </div>
         )}
 
-        {/* MY FARMS LIST */}
+        {/* MY FARMS */}
         {screen === "farms" && (
           <div key="farms" className="page-transition">
             <MyFarms
-              onAddFarm={() => setIsAddModalOpen(true)}
               onSelectFarm={(farmId) => {
                 setSelectedFarmId(farmId);
                 setScreen("farm-details");
@@ -61,21 +56,10 @@ function App() {
                 if (tab === "Home") setScreen("dashboard");
               }}
             />
-
-            {/* ADD FARM MODAL OVERLAY */}
-            {isAddModalOpen && (
-              <AddFarmModal
-                onClose={() => setIsAddModalOpen(false)}
-                onSave={(newFarm) => {
-                  console.log("New farm created:", newFarm);
-                  setIsAddModalOpen(false);
-                }}
-              />
-            )}
           </div>
         )}
 
-        {/* FARM DETAILS SCREEN */}
+        {/* FARM DETAILS */}
         {screen === "farm-details" && (
           <div key="farm-details" className="page-transition">
             <FarmDetails

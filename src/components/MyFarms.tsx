@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../css/MyFarms.css";
 import AddFarmModal from "./AddFarmModal";
-import farmThumbnail from "../assets/images/farm.jfif"; // Replace with your image asset path
+import farmThumbnail from "../assets/images/farm.jfif";
 
 interface FarmItem {
   id: string;
@@ -41,11 +41,12 @@ const initialFarmsData: FarmItem[] = [
 ];
 
 interface MyFarmsProps {
+  onAddFarm?: () => void;
   onSelectFarm?: (id: string) => void;
   onNavClick?: (tab: string) => void;
 }
 
-function MyFarms({ onSelectFarm, onNavClick }: MyFarmsProps) {
+function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
   const [farms, setFarms] = useState<FarmItem[]>(initialFarmsData);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -54,10 +55,16 @@ function MyFarms({ onSelectFarm, onNavClick }: MyFarmsProps) {
       ...prev,
       {
         ...newFarm,
-        image: newFarm.image || farmThumbnail, // fall back to default only if none uploaded
+        image: newFarm.image || farmThumbnail,
       },
     ]);
     setIsModalOpen(false);
+  };
+
+  /* If App passes onAddFarm, defer to it; otherwise open local modal */
+  const handleAddClick = () => {
+    if (onAddFarm) onAddFarm();
+    else setIsModalOpen(true);
   };
 
   return (
@@ -66,10 +73,7 @@ function MyFarms({ onSelectFarm, onNavClick }: MyFarmsProps) {
         {/* HEADER SECTION */}
         <header className="farms-header">
           <h1 className="page-title">My Farms</h1>
-          <button
-            className="add-farm-btn"
-            onClick={() => setIsModalOpen(true)}
-          >
+          <button className="add-farm-btn" onClick={handleAddClick}>
             <span className="plus-icon">+</span> Add Farm
           </button>
         </header>
@@ -171,7 +175,7 @@ function MyFarms({ onSelectFarm, onNavClick }: MyFarmsProps) {
           </button>
         </nav>
 
-        {/* ADD FARM MODAL */}
+        {/* ADD FARM MODAL (local fallback if App doesn't handle it) */}
         {isModalOpen && (
           <AddFarmModal
             onClose={() => setIsModalOpen(false)}
