@@ -10,7 +10,6 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
   return (
     <main className="welcome-page">
       <div className="welcome-card">
-        
         {/* BACKGROUND IMAGE & BLEND OVERLAY */}
         <img
           src={farmImage}
@@ -21,14 +20,9 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
 
         {/* TOP / MAIN CONTENT AREA */}
         <div className="welcome-content">
-          
           {/* LOGO & BRAND */}
           <div className="brand">
-            <img
-              src={madaLogo}
-              alt="MADA"
-              className="mada-logo"
-            />
+            <img src={madaLogo} alt="MADA" className="mada-logo" />
             <div className="brand-info">
               <h1>MADA</h1>
               <p>Smart tools for better farming.</p>
@@ -47,7 +41,6 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
               updates, and grow with confidence.
             </p>
           </div>
-
         </div>
 
         {/* BOTTOM CONTROLS */}
@@ -62,7 +55,6 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
             <span className="page-dot"></span>
           </div>
         </div>
-
       </div>
     </main>
   );

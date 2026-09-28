@@ -1,0 +1,120 @@
+/* ============================
+   OVERLAY (full screen)
+   ============================ */
+.loading-spinner-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  background: #fcf9f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* ============================
+   CARD
+   ============================ */
+.loading-spinner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.loading-spinner-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  animation: pulseLogo 1.6s ease-in-out infinite;
+}
+
+.loading-spinner-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #1b4d2e;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.loading-spinner-text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5c6e58;
+  letter-spacing: 0.3px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ============================
+   LEAF SPINNER
+   ============================ */
+.leaf-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  animation: leafSway 2.4s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.leaf-spinner svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(27, 77, 46, 0.25));
+}
+
+.leaf-shape {
+  transform-origin: 32px 56px;
+  animation: leafGrow 1.8s ease-in-out infinite;
+}
+
+.leaf-vein,
+.leaf-veins {
+  animation: leafVeinPulse 1.8s ease-in-out infinite;
+}
+
+/* ============================
+   CIRCLE SPINNER (fallback)
+   ============================ */
+.circle-spinner {
+  border-radius: 50%;
+  border: 4px solid #e3ede1;
+  border-top-color: #557843;
+  animation: spin 0.9s linear infinite;
+  margin-top: 8px;
+}
+
+/* ============================
+   ANIMATIONS
+   ============================ */
+@keyframes leafSway {
+  0%, 100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(8deg); }
+}
+
+@keyframes leafGrow {
+  0%, 100% { transform: scale(0.94); opacity: 0.9; }
+  50%      { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes leafVeinPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.95; }
+}
+
+@keyframes pulseLogo {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.08); opacity: 0.85; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
