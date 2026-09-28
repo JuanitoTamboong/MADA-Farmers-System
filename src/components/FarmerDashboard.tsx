@@ -4,9 +4,10 @@ import farmerAvatar from "../assets/images/mada-dashboard.png";
 
 interface FarmerDashboardProps {
   onLogout?: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
-function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
+function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
   return (
     <main className="dashboard-page">
       <div className="dashboard-card">
@@ -52,7 +53,11 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
         </section>
 
         {/* MY FARMS BANNER */}
-        <section className="my-farms-banner">
+        <section 
+          className="my-farms-banner" 
+          onClick={() => onNavigate && onNavigate("farms")} 
+          style={{ cursor: "pointer" }}
+        >
           <img src={farmImage} alt="Farm" className="farms-bg" />
           <div className="farms-overlay"></div>
           <div className="farms-info">
@@ -166,14 +171,14 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
 
         {/* BOTTOM NAVIGATION BAR */}
         <nav className="bottom-nav">
-          <button className="nav-item active">
+          <button className="nav-item active" onClick={() => onNavigate && onNavigate("dashboard")}>
             <svg className="nav-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
             <span>Home</span>
           </button>
 
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => onNavigate && onNavigate("farms")}>
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22V12" />
               <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" />

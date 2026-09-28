@@ -2,9 +2,11 @@ import { useState } from "react";
 import WelcomeScreen from "./components/WelcomeScreen";
 import LoginScreen from "./components/LoginScreen";
 import FarmerDashboard from "./components/FarmerDashboard";
+import MyFarms from "./components/MyFarms";
 
 function App() {
-  const [screen, setScreen] = useState<"welcome" | "login" | "dashboard">("welcome");
+  const [screen, setScreen] = useState<"welcome" | "login" | "dashboard" | "farms">("welcome");
+  const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
 
   return (
     <div className="app-container">
@@ -25,7 +27,26 @@ function App() {
 
       {screen === "dashboard" && (
         <div key="dashboard" className="page-transition">
-          <FarmerDashboard onLogout={() => setScreen("welcome")} />
+          <FarmerDashboard 
+            onLogout={() => setScreen("welcome")} 
+            onNavigate={(tab) => {
+              if (tab === "farms" || tab === "Farm") setScreen("farms");
+            }}
+          />
+        </div>
+      )}
+
+      {screen === "farms" && (
+        <div key="farms" className="page-transition">
+          <MyFarms 
+            onSelectFarm={(farmId) => {
+              setSelectedFarmId(farmId);
+              // Handle farm detail screen here if needed
+            }}
+            onNavClick={(tab) => {
+              if (tab === "Home") setScreen("dashboard");
+            }}
+          />
         </div>
       )}
     </div>

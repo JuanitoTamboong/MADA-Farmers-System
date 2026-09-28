@@ -1,0 +1,258 @@
+.farms-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.farms-card {
+  position: relative;
+  width: 100%;
+  max-width: 393px;
+  height: 100vh;
+  max-height: 852px;
+  background-color: #fcf9f0;
+  padding: 24px 16px 0 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* HEADER SECTION */
+.farms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1b4d2e;
+}
+
+.add-farm-btn {
+  background: #1b4d2e;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 77, 46, 0.2);
+  transition: background 0.2s ease;
+}
+
+.add-farm-btn:hover {
+  background: #143d24;
+}
+
+.plus-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* LIST CONTAINER */
+.farms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: 16px;
+}
+
+/* FARM CARD ITEM */
+.farm-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f0eae1;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.farm-card:active {
+  transform: scale(0.98);
+}
+
+.farm-top-row {
+  display: flex;
+  gap: 14px;
+}
+
+.farm-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 16px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.farm-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.farm-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.farm-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0d2818;
+}
+
+.chevron-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.farm-meta {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: #5c6e58;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.meta-icon {
+  width: 12px;
+  height: 12px;
+  fill: #1b4d2e;
+}
+
+.badge-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-crop {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-status {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #166534;
+}
+
+.farm-divider {
+  border: none;
+  border-top: 1px dashed #e5e7eb;
+  margin: 14px 0 10px;
+}
+
+.farm-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.farm-schedule p {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.farm-schedule p span {
+  color: #374151;
+  font-weight: 700;
+}
+
+/* BOTTOM NAVIGATION BAR */
+.bottom-nav {
+  margin-top: auto;
+  margin-left: -16px;
+  margin-right: -16px;
+  height: 64px;
+  background: #ffffff;
+  border-top: 1px solid #eae6d9;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #8fa091;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: #1b4d2e;
+}
+
+.active-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1b4d2e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-pill .nav-icon {
+  stroke: #ffffff;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+}
