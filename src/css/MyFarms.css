@@ -101,6 +101,7 @@
   border-radius: 16px;
   object-fit: cover;
   flex-shrink: 0;
+  background: #e5e5e5;
 }
 
 .farm-details {

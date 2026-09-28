@@ -1,4 +1,6 @@
+import { useState } from "react";
 import "../css/MyFarms.css";
+import AddFarmModal from "./AddFarmModal";
 import farmThumbnail from "../assets/images/farm.jfif"; // Replace with your image asset path
 
 interface FarmItem {
@@ -13,7 +15,7 @@ interface FarmItem {
   image?: string;
 }
 
-const farmsData: FarmItem[] = [
+const initialFarmsData: FarmItem[] = [
   {
     id: "1",
     name: "San Jose Farm",
@@ -39,27 +41,42 @@ const farmsData: FarmItem[] = [
 ];
 
 interface MyFarmsProps {
-  onAddFarm?: () => void;
   onSelectFarm?: (id: string) => void;
   onNavClick?: (tab: string) => void;
 }
 
-function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
+function MyFarms({ onSelectFarm, onNavClick }: MyFarmsProps) {
+  const [farms, setFarms] = useState<FarmItem[]>(initialFarmsData);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSaveFarm = (newFarm: any) => {
+    setFarms((prev) => [
+      ...prev,
+      {
+        ...newFarm,
+        image: newFarm.image || farmThumbnail, // fall back to default only if none uploaded
+      },
+    ]);
+    setIsModalOpen(false);
+  };
+
   return (
     <main className="farms-page">
       <div className="farms-card">
-        
         {/* HEADER SECTION */}
         <header className="farms-header">
           <h1 className="page-title">My Farms</h1>
-          <button className="add-farm-btn" onClick={onAddFarm}>
+          <button
+            className="add-farm-btn"
+            onClick={() => setIsModalOpen(true)}
+          >
             <span className="plus-icon">+</span> Add Farm
           </button>
         </header>
 
         {/* FARMS LIST CONTAINER */}
         <div className="farms-list">
-          {farmsData.map((farm) => (
+          {farms.map((farm) => (
             <article
               key={farm.id}
               className="farm-card"
@@ -71,7 +88,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
                   alt={farm.name}
                   className="farm-img"
                 />
-                
+
                 <div className="farm-details">
                   <div className="farm-name-row">
                     <h2 className="farm-title">{farm.name}</h2>
@@ -154,6 +171,13 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
           </button>
         </nav>
 
+        {/* ADD FARM MODAL */}
+        {isModalOpen && (
+          <AddFarmModal
+            onClose={() => setIsModalOpen(false)}
+            onSave={handleSaveFarm}
+          />
+        )}
       </div>
     </main>
   );
