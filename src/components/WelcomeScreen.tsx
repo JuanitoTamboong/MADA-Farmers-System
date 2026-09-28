@@ -7,7 +7,7 @@ import farmImage3 from "../assets/images/farm3.jpg";
 import farmImage4 from "../assets/images/farm4.jpg";
 import madaLogo from "../assets/images/maya-bird.png";
 
-const backgrounds = [farmImage1, farmImage2, farmImage3];
+const backgrounds = [farmImage1, farmImage2, farmImage3, farmImage4];
 
 function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
   const [index, setIndex] = useState(0);
@@ -71,10 +71,15 @@ function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
           <button className="get-started" onClick={onGetStarted}>
             Get Started
           </button>
+
+          {/* PAGINATION DOTS — driven by index */}
           <div className="pagination">
-            <span className="page-dot active"></span>
-            <span className="page-dot"></span>
-            <span className="page-dot"></span>
+            {backgrounds.map((_, i) => (
+              <span
+                key={i}
+                className={`page-dot ${i === index ? "active" : ""}`}
+              ></span>
+            ))}
           </div>
         </div>
       </div>
