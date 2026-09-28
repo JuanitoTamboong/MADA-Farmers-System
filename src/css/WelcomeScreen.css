@@ -62,7 +62,7 @@ body {
   object-fit: cover;
   object-position: center bottom;
   opacity: 0;
-  transition: opacity 1.6s ease-in-out;
+  transition: opacity 0.8s ease-in-out;   /* ← faster fade */
   will-change: opacity;
 }
 
@@ -204,6 +204,7 @@ body {
   height: 6px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
+  transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
 }
 
 .page-dot.active {

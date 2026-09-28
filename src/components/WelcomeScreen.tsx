@@ -15,7 +15,7 @@ function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
   useEffect(() => {
     const id = setInterval(() => {
       setIndex((prev) => (prev + 1) % backgrounds.length);
-    }, 6000);
+    }, 3000); // ← 3 seconds
     return () => clearInterval(id);
   }, []);
 
@@ -72,7 +72,6 @@ function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
             Get Started
           </button>
 
-          {/* PAGINATION DOTS — driven by index */}
           <div className="pagination">
             {backgrounds.map((_, i) => (
               <span
