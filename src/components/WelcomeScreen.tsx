@@ -1,8 +1,12 @@
-import "../css/welcomeScreen.css";
+import "../css/WelcomeScreen.css";
 import farmImage from "../assets/images/farm.jfif";
 import madaLogo from "../assets/images/maya-bird.png";
 
-function WelcomeScreen() {
+interface WelcomeScreenProps {
+  onGetStarted?: () => void;
+}
+
+function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
   return (
     <main className="welcome-page">
       <div className="welcome-card">
@@ -48,7 +52,7 @@ function WelcomeScreen() {
 
         {/* BOTTOM CONTROLS */}
         <div className="bottom-controls">
-          <button className="get-started">
+          <button className="get-started" onClick={onGetStarted}>
             Get Started
           </button>
 
