@@ -1,0 +1,190 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.welcome-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+}
+
+/* MAIN PHONE CONTAINER */
+.welcome-card {
+  position: relative;
+  width: 100%;
+  max-width: 393px;
+  height: 852px;
+  overflow: hidden;
+  background-color: #fcf9f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* BACKGROUND IMAGE (POSITIONED IN LOWER HALF) */
+.background-farm {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 65%;
+  object-fit: cover;
+  object-position: center bottom;
+  z-index: 1;
+}
+
+/* GRADIENT OVERLAY FOR SMOOTH CREAM BLENDING */
+.background-blend {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    #fcf9f0 0%,
+    #fcf9f0 35%,
+    rgba(252, 249, 240, 0.8) 50%,
+    rgba(252, 249, 240, 0) 70%
+  );
+}
+
+/* CONTENT CONTAINER */
+.welcome-content {
+  position: relative;
+  z-index: 5;
+  padding: 50px 28px 0 28px;
+}
+
+/* TOP STATUS BAR MOCK (OPTIONAL) */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 25px;
+}
+
+/* BRAND HEADER */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mada-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.brand-info h1 {
+  margin: 0;
+  color: #1b4d2e;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.brand-info p {
+  margin: 2px 0 0 0;
+  color: #5c6e58;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* HERO TEXT */
+.hero-content {
+  margin-top: 36px;
+}
+
+.hero-content h2 {
+  margin: 0;
+  color: #0d2818;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.hero-content p {
+  margin-top: 16px;
+  color: #4a554a;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* BOTTOM SECTION */
+.bottom-controls {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  padding: 0 24px 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* GET STARTED BUTTON */
+.get-started {
+  width: 100%;
+  height: 56px;
+  border-radius: 28px;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: #557843;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.get-started:hover {
+  background: #476637;
+}
+
+.get-started:active {
+  transform: scale(0.98);
+}
+
+/* PAGINATION DOTS */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.page-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.page-dot.active {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+}
