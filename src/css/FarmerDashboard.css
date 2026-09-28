@@ -1,27 +1,28 @@
 .dashboard-page {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f3efe6;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
 }
 
 .dashboard-card {
   position: relative;
   width: 100%;
   max-width: 390px;
-  height: 844px;
+  height: 100vh;
+  max-height: 844px;
   background-color: #fcf9f0;
-  border-radius: 40px;
-  padding: 32px 18px 75px 18px;
+  padding: 24px 16px 0 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: hidden;
+
 }
 
 /* HEADER SECTION */
@@ -29,24 +30,26 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .greeting-sub {
-  font-size: 14px;
+  font-size: 13px;
   color: #1b4d2e;
   font-weight: 700;
 }
 
 .user-name {
-  margin: 1px 0 3px;
-  font-size: 26px;
+  margin: 1px 0 2px;
+  font-size: 24px;
   font-weight: 800;
   color: #0d2818;
 }
 
 .location-tag {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #4a5c48;
   display: flex;
   align-items: center;
@@ -55,14 +58,14 @@
 }
 
 .location-icon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   fill: #1b4d2e;
 }
 
 .header-illustration {
-  width: 110px;
-  height: 80px;
+  width: 95px;
+  height: 70px;
   cursor: pointer;
   display: flex;
   justify-content: flex-end;
@@ -83,6 +86,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .weather-main {
@@ -115,13 +120,15 @@
 /* MY FARMS BANNER */
 .my-farms-banner {
   position: relative;
-  height: 82px;
+  height: 80px;
   border-radius: 18px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .farms-bg {
@@ -172,26 +179,30 @@
   backdrop-filter: blur(2px);
 }
 
-/* ACTION GRID */
+/* ACTION GRID - Locked ratio to stop tall stretching */
 .action-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .grid-item {
   background: #ffffff;
   border: 1px solid #f0eae1;
   border-radius: 18px;
-  padding: 14px 6px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  aspect-ratio: 1 / 1; /* Maintains compact square proportions */
+  box-sizing: border-box;
 }
 
 .grid-item:active {
@@ -217,7 +228,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 2px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .section-header {
@@ -243,7 +255,7 @@
 .task-card {
   background: #ffffff;
   border-radius: 18px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -273,21 +285,19 @@
   color: #718072;
 }
 
-/* BOTTOM NAV */
+/* BOTTOM NAV BAR */
 .bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 62px;
+  margin-top: auto; /* Dynamically pushes nav bar to the bottom */
+  margin-left: -16px;
+  margin-right: -16px;
+  height: 64px;
   background: #ffffff;
   border-top: 1px solid #eae6d9;
-  border-bottom-left-radius: 40px;
-  border-bottom-right-radius: 40px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 0 8px;
+  flex-shrink: 0;
 }
 
 .nav-item {

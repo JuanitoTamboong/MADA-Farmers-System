@@ -35,7 +35,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
         <section className="weather-card">
           <div className="weather-main">
             <div className="weather-status-icon">
-              <svg viewBox="0 0 24 24" fill="none" width="36" height="36">
+              <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
                 <circle cx="12" cy="10" r="4" fill="#F59E0B" />
                 <path d="M6 16.5C6 14.57 7.57 13 9.5 13C10.23 13 10.91 13.23 11.47 13.62C12.27 12.63 13.51 12 14.9 12C17.33 12 19.3 13.97 19.3 16.4C19.3 16.6 19.28 16.8 19.25 17H6.25C6.09 16.85 6 16.68 6 16.5Z" fill="#E2E8F0" />
               </svg>
@@ -60,7 +60,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
             <p>2 Farms • 4.5 ha total</p>
           </div>
           <button className="farms-arrow" aria-label="View Farms">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
@@ -71,7 +71,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Crop Health */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22V12" />
                 <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" />
                 <path d="M12 16C12 13 9.5 10.5 6.5 10.5C6.5 13.5 9 16 12 16Z" />
@@ -83,7 +83,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Expenses */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2L18 2L20 7L4 7L6 2Z" />
                 <path d="M4 7C4 7 3 14 3 17C3 19.2 4.8 21 7 21H17C19.2 21 21 19.2 21 17C21 14 20 7 20 7" />
                 <circle cx="12" cy="14" r="2" />
@@ -95,7 +95,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Market Prices */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2L3 6V20C3 20.5 3.5 21 4 21H20C20.5 21 21 20.5 21 20V6L18 2H6Z" />
                 <path d="M3 6H21" />
                 <path d="M16 10C16 12.2 14.2 14 12 14C9.8 14 8 12.2 8 10" />
@@ -107,7 +107,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Calendar */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="3" />
                 <path d="M16 2V6" />
                 <path d="M8 2V6" />
@@ -121,7 +121,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Announcements */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15V6C21 4.9 20.1 4 19 4H5C3.9 4 3 4.9 3 6V15C3 16.1 3.9 17 5 17H7V21L11 17H19C20.1 17 21 16.1 21 15Z" />
                 <path d="M12 8V11" />
                 <path d="M12 13H12.01" />
@@ -133,7 +133,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
           {/* Assistance */}
           <button className="grid-item">
             <div className="grid-icon-box">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" />
                 <circle cx="12" cy="9" r="2.5" fill="#1B4D2E" />
               </svg>
@@ -151,7 +151,7 @@ function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
 
           <div className="task-card">
             <div className="task-icon-wrapper">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1B4D2E" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1B4D2E" strokeWidth="2">
                 <path d="M12 22V12" />
                 <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" />
                 <path d="M12 16C12 13 9.5 10.5 6.5 10.5C6.5 13.5 9 16 12 16Z" />
