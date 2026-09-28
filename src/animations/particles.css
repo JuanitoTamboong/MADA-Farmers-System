@@ -1,0 +1,65 @@
+/* ============================
+   PARTICLES LAYER
+   ============================ */
+.particles-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Base particle — soft floating dot */
+.particle {
+  position: absolute;
+  bottom: -20px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(180, 220, 160, 0.4));
+  opacity: 0;
+  animation: floatUp linear infinite;
+  filter: blur(0.5px);
+}
+
+/* Sizes, positions, durations — each particle unique */
+.particle-1  { left: 5%;  width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 0s;   }
+.particle-2  { left: 12%; width: 10px; height: 10px; animation-duration: 12s; animation-delay: 1.2s; }
+.particle-3  { left: 20%; width: 5px;  height: 5px;  animation-duration: 8s;  animation-delay: 2.4s; }
+.particle-4  { left: 28%; width: 8px;  height: 8px;  animation-duration: 11s; animation-delay: 0.6s; }
+.particle-5  { left: 36%; width: 7px;  height: 7px;  animation-duration: 10s; animation-delay: 3.1s; }
+.particle-6  { left: 44%; width: 12px; height: 12px; animation-duration: 14s; animation-delay: 0.9s; }
+.particle-7  { left: 52%; width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 4.2s; }
+.particle-8  { left: 60%; width: 9px;  height: 9px;  animation-duration: 13s; animation-delay: 1.8s; }
+.particle-9  { left: 68%; width: 5px;  height: 5px;  animation-duration: 7s;  animation-delay: 2.7s; }
+.particle-10 { left: 76%; width: 8px;  height: 8px;  animation-duration: 11s; animation-delay: 3.6s; }
+.particle-11 { left: 84%; width: 10px; height: 10px; animation-duration: 12s; animation-delay: 1.5s; }
+.particle-12 { left: 92%; width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 2.1s; }
+.particle-13 { left: 8%;  width: 4px;  height: 4px;  animation-duration: 6s;  animation-delay: 5.0s; }
+.particle-14 { left: 32%; width: 11px; height: 11px; animation-duration: 15s; animation-delay: 4.5s; }
+.particle-15 { left: 56%; width: 7px;  height: 7px;  animation-duration: 10s; animation-delay: 5.8s; }
+.particle-16 { left: 72%; width: 5px;  height: 5px;  animation-duration: 8s;  animation-delay: 6.3s; }
+.particle-17 { left: 88%; width: 9px;  height: 9px;  animation-duration: 13s; animation-delay: 3.2s; }
+.particle-18 { left: 48%; width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 7.1s; }
+
+/* Float upward + gentle horizontal drift + fade in/out */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(-45vh) translateX(20px) scale(1);
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateY(-95vh) translateX(-15px) scale(0.8);
+    opacity: 0;
+  }
+}

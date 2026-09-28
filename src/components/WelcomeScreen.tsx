@@ -1,26 +1,50 @@
+import { useEffect, useState } from "react";
 import "../css/WelcomeScreen.css";
-import farmImage from "../assets/images/farm.jfif";
+import "../animations/particles.css";
+import farmImage1 from "../assets/images/farm.jfif";
+import farmImage2 from "../assets/images/farm2.jpg";
+import farmImage3 from "../assets/images/farm3.jpg";
+import farmImage4 from "../assets/images/farm4.jpg";
 import madaLogo from "../assets/images/maya-bird.png";
 
-interface WelcomeScreenProps {
-  onGetStarted?: () => void;
-}
+const backgrounds = [farmImage1, farmImage2, farmImage3];
 
-function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
+function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % backgrounds.length);
+    }, 6000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <main className="welcome-page">
       <div className="welcome-card">
-        {/* BACKGROUND IMAGE & BLEND OVERLAY */}
-        <img
-          src={farmImage}
-          alt="Farm landscape"
-          className="background-farm"
-        />
+        {/* BACKGROUND STACK */}
+        <div className="background-stack">
+          {backgrounds.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={`Farm landscape ${i + 1}`}
+              className={`background-farm ${i === index ? "active" : ""}`}
+            />
+          ))}
+        </div>
+
         <div className="background-blend"></div>
 
-        {/* TOP / MAIN CONTENT AREA */}
+        {/* PARTICLES */}
+        <div className="particles-layer" aria-hidden="true">
+          {Array.from({ length: 18 }).map((_, i) => (
+            <span key={i} className={`particle particle-${i + 1}`}></span>
+          ))}
+        </div>
+
+        {/* CONTENT */}
         <div className="welcome-content">
-          {/* LOGO & BRAND */}
           <div className="brand">
             <img src={madaLogo} alt="MADA" className="mada-logo" />
             <div className="brand-info">
@@ -29,7 +53,6 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
             </div>
           </div>
 
-          {/* HERO TEXT */}
           <div className="hero-content">
             <h2>
               Empowering<br />
@@ -43,12 +66,11 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
           </div>
         </div>
 
-        {/* BOTTOM CONTROLS */}
+        {/* BOTTOM */}
         <div className="bottom-controls">
           <button className="get-started" onClick={onGetStarted}>
             Get Started
           </button>
-
           <div className="pagination">
             <span className="page-dot active"></span>
             <span className="page-dot"></span>

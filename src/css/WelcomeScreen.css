@@ -41,16 +41,33 @@ body {
   box-sizing: border-box;
 }
 
-/* BACKGROUND IMAGE (POSITIONED IN LOWER HALF) */
-.background-farm {
+/* ============================
+   BACKGROUND STACK (crossfade shuffle)
+   ============================ */
+.background-stack {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 65%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.background-farm {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center bottom;
-  z-index: 1;
+  opacity: 0;
+  transition: opacity 1.6s ease-in-out;
+  will-change: opacity;
+}
+
+.background-farm.active {
+  opacity: 1;
 }
 
 /* GRADIENT OVERLAY FOR SMOOTH CREAM BLENDING */
@@ -197,8 +214,7 @@ body {
 
 /* ============================
    WELCOME INNER WRAPPER
-   (keeps absolute children inside phone frame
-    + fades content in after loading)
+   (optional — kept for future use)
    ============================ */
 .welcome-inner {
   position: absolute;
