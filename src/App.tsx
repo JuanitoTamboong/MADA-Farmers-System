@@ -6,7 +6,6 @@ import MyFarms from "./components/MyFarms";
 
 function App() {
   const [screen, setScreen] = useState<"welcome" | "login" | "dashboard" | "farms">("welcome");
-  const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
 
   return (
     <div className="app-container">
@@ -40,8 +39,7 @@ function App() {
         <div key="farms" className="page-transition">
           <MyFarms 
             onSelectFarm={(farmId) => {
-              setSelectedFarmId(farmId);
-              // Handle farm detail screen here if needed
+              console.log("Selected farm:", farmId);
             }}
             onNavClick={(tab) => {
               if (tab === "Home") setScreen("dashboard");

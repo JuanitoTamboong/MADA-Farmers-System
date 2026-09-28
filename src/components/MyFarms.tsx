@@ -1,4 +1,3 @@
-import React from "react";
 import "../css/MyFarms.css";
 import farmThumbnail from "../assets/images/farm.jfif"; // Replace with your image asset path
 
@@ -76,11 +75,11 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
                 <div className="farm-details">
                   <div className="farm-name-row">
                     <h2 className="farm-title">{farm.name}</h2>
-                    <button className="chevron-btn" aria-label="View Details">
+                    <div className="chevron-btn" aria-label="View Details">
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                         <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
                       </svg>
-                    </button>
+                    </div>
                   </div>
 
                   <p className="farm-meta">
