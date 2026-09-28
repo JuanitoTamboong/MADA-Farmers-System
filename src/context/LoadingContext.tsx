@@ -1,5 +1,10 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";   // ← correct
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import madaLogo from "../assets/images/maya-bird.png";
 
 interface LoadingContextValue {
