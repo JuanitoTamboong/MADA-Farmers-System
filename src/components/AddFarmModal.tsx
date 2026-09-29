@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import "../css/AddFarmModal.css";
 
 interface AddFarmModalProps {
@@ -48,12 +49,15 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
     });
   };
 
-  return (
+  const modal = (
     <div className="modal-overlay">
       <div className="modal-content page-transition">
         <div className="modal-header">
           <h2>Add New Farm</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          {/* ✅ type="button" so ✕ doesn't submit the form */}
+          <button type="button" className="close-btn" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="add-farm-form">
@@ -197,6 +201,8 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 export default AddFarmModal;
