@@ -1,14 +1,12 @@
 /* src/css/FarmerDashboard.css */
 
-/* CONTENT WRAPPER (replaces the old .dashboard-page / .dashboard-card) */
 .dashboard-content {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+
   padding: 24px 16px 0 16px;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 /* HEADER SECTION */
@@ -271,39 +269,3 @@
   color: #718072;
 }
 
-/* BOTTOM NAV BAR */
-.bottom-nav {
-  margin-top: auto;
-  margin-left: -16px;
-  margin-right: -16px;
-  height: 64px;
-  background: #ffffff;
-  border-top: 1px solid #eae6d9;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 8px;
-  flex-shrink: 0;
-}
-
-.nav-item {
-  background: none;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: #8fa091;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.nav-item.active {
-  color: #1b4d2e;
-}
-
-.nav-icon {
-  width: 20px;
-  height: 20px;
-}

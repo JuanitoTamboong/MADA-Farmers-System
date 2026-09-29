@@ -1,17 +1,17 @@
 .bottom-nav {
-  position: absolute;                        /* anchors to .app-container, not viewport */
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));  /* content + home indicator */
   background: #ffffff;
   border-top: 1px solid #eae6d9;
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 0 8px;
-  padding-bottom: env(safe-area-inset-bottom, 0);   /* iPhone home indicator */
-  z-index: 10;                               /* above .scrollable-content */
+  padding-bottom: env(safe-area-inset-bottom, 0px);       /* pushes icons above the home bar */
+  z-index: 10;
   pointer-events: auto;
 }
 

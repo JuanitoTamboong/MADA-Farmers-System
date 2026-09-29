@@ -6,7 +6,7 @@ interface PageLayoutProps {
   children: React.ReactNode;
   className?: string;
   activeTab?: string;
-  onNavigate?: (tab: string) => void;   // ← renamed from onNavClick
+  onNavigate?: (tab: string) => void;
   hideNav?: boolean;
 }
 
@@ -14,7 +14,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   className = "",
   activeTab = "Home",
-  onNavigate,                            // ← renamed
+  onNavigate,
   hideNav = false,
 }) => {
   return (
@@ -22,7 +22,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <div className={`app-container ${className}`}>
         <div
           className="scrollable-content"
-          style={{ paddingBottom: hideNav ? "0px" : "64px" }}
+          style={{
+            paddingBottom: hideNav
+              ? "0px"
+              : "calc(64px + env(safe-area-inset-bottom, 0px))",
+          }}
         >
           {children}
         </div>

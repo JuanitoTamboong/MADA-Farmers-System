@@ -22,7 +22,8 @@ body {
 /* 1. Outer wrapper that centers the phone on desktop */
 .app-viewport {
   width: 100%;
-  height: 100vh;              /* fallback for old browsers */
+  height: 100vh;              /* fallback for very old browsers */
+  height: 100svh;             /* fallback for browsers without dvh */
   height: 100dvh;             /* ✅ dynamic viewport height — mobile-safe */
   display: flex;
   align-items: center;
@@ -36,6 +37,7 @@ body {
   width: 100%;
   max-width: 393px;           /* phone width */
   height: 100vh;              /* fallback */
+  height: 100svh;             /* fallback */
   height: 100dvh;             /* ✅ dynamic viewport height */
   max-height: 852px;          /* cap on tall desktop screens */
   overflow: hidden;
@@ -48,11 +50,12 @@ body {
 /* 3. Scroll area */
 .scrollable-content {
   flex: 1;
-  min-height: 0;              /* ✅ REQUIRED for flex: 1 to size correctly */
+  min-height: 0;                            /* ✅ REQUIRED for flex: 1 to size correctly */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;        /* ✅ smooth momentum scrolling on iOS */
   width: 100%;
-  position: relative;         /* ✅ creates a stacking context */
-  z-index: 0;                 /* ✅ keeps it below the nav */
+  position: relative;                       /* ✅ creates a stacking context */
+  z-index: 0;                               /* ✅ keeps it below the nav */
   scrollbar-width: none;
 }
 .scrollable-content::-webkit-scrollbar {
