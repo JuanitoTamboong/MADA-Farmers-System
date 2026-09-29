@@ -1,0 +1,225 @@
+.crop-health-container {
+  padding: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1f2937;
+}
+
+/* Header */
+.crop-health-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: #111827;
+}
+
+.crop-health-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+/* Banner Image */
+.crop-banner-wrapper {
+  width: 100%;
+  height: 160px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.crop-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Upload Actions */
+.upload-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.take-photo-btn {
+  width: 100%;
+  background-color: #1b4d2e;
+  color: #ffffff;
+  border-radius: 28px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 77, 46, 0.2);
+}
+
+.upload-gallery-link {
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px;
+}
+
+/* AI Detection Section */
+.section-title {
+  display: flex;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.optional-tag {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.detection-card {
+  background-color: #fcfbf7;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+/* Disease Header */
+.disease-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.disease-thumb-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.disease-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.disease-title-area {
+  flex: 1;
+}
+
+.disease-sub {
+  font-size: 0.8rem;
+  color: #6b7280;
+  display: block;
+}
+
+.disease-name {
+  margin: 2px 0 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.confidence-badge {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+/* Disease Body */
+.disease-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.detail-icon {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  display: block;
+  font-weight: 500;
+}
+
+.detail-content p {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.35;
+}
+
+/* Footer Metrics */
+.disease-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.severity-high {
+  color: #dc2626;
+}
+
+.dot {
+  font-size: 0.75rem;
+}

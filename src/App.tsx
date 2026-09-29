@@ -5,7 +5,8 @@ import FarmerDashboard from "./components/FarmerDashboard";
 import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
 import ProfileScreen from "./components/FarmerProfile";
-import FarmingCalendar from "./components/FarmingCalendar";   // ← ADD
+import FarmingCalendar from "./components/FarmingCalendar";
+import CropHealth from "./components/CropHealth";              // ← ADD
 import { LoadingProvider } from "./context/LoadingContext";
 
 type Screen =
@@ -15,7 +16,8 @@ type Screen =
   | "farms"
   | "farm-details"
   | "profile"
-  | "calendar";                                              // ← ADD
+  | "calendar"
+  | "crop-health";                                            // ← ADD
 
 function App() {
   const [screen, setScreen] = useState<Screen>("welcome");
@@ -35,9 +37,13 @@ function App() {
       case "profile":
         setScreen("profile");
         break;
-      case "Tasks":                                          // ← FIX: actually navigate
+      case "Tasks":
       case "calendar":
         setScreen("calendar");
+        break;
+      case "CropHealth":                                      // ← ADD
+      case "crop-health":
+        setScreen("crop-health");
         break;
       default:
         console.warn(`Unknown navigation target: ${tab}`);
@@ -101,13 +107,19 @@ function App() {
         </div>
       )}
 
-      {/* ↓ ADD — render the calendar when the Tasks tab is tapped */}
       {screen === "calendar" && (
         <div key="calendar" className="page-transition">
           <FarmingCalendar
             onBack={() => setScreen("dashboard")}
             onNavigate={handleNavigate}
           />
+        </div>
+      )}
+
+      {/* ↓ ADD — render the Crop Health screen */}
+      {screen === "crop-health" && (
+        <div key="crop-health" className="page-transition">
+          <CropHealth onNavigate={handleNavigate} />
         </div>
       )}
     </LoadingProvider>

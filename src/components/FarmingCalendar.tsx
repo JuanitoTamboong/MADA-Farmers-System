@@ -27,7 +27,9 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
         {/* HEADER */}
         <header className="calendar-header">
           <button type="button" className="calendar-back-btn" onClick={onBack}>
-            ‹
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
           <h1>Farming Calendar</h1>
         </header>
@@ -58,9 +60,14 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
           <h3>Today's Tasks</h3>
           <div className="task-list-card">
 
+            {/* Irrigation Item */}
             <div className="calendar-task-item">
               <div className="task-icon-circle green-bg">
-                🌱
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#1B4D2E">
+                  <path d="M12 2C11.5 2 11 2.5 11 3V12C9 10 7 10 5 12C3 14 3 17 5.5 19.5C8 22 12 22 12 22C12 22 16 22 18.5 19.5C21 17 21 14 19 12C17 10 15 10 13 12V3C13 2.5 12.5 2 12 2Z" opacity="0.2" />
+                  <path d="M12 3V21M12 21C12 21 7 19 7 14C7 11.5 9.5 9.5 12 12C14.5 9.5 17 11.5 17 14C17 19 12 21 12 21Z" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <circle cx="12" cy="7" r="2.5" fill="#1B4D2E" />
+                </svg>
               </div>
               <div className="task-info">
                 <h4>Irrigation</h4>
@@ -71,9 +78,14 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
 
             <div className="task-divider" />
 
+            {/* Pest Monitoring Item */}
             <div className="calendar-task-item">
               <div className="task-icon-circle yellow-bg">
-                🐛
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 8V4M8 6l8 0" />
+                  <rect x="7" y="8" width="10" height="12" rx="5" fill="#D97706" fillOpacity="0.2" />
+                  <path d="M5 12h2M17 12h2M5 16h2M17 16h2" />
+                </svg>
               </div>
               <div className="task-info">
                 <h4>Pest Monitoring</h4>
@@ -84,9 +96,12 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
 
             <div className="task-divider" />
 
+            {/* Equipment Maintenance Item */}
             <div className="calendar-task-item">
               <div className="task-icon-circle red-bg">
-                🚜
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" fill="#DC2626" fillOpacity="0.2" />
+                </svg>
               </div>
               <div className="task-info">
                 <h4>Equipment Maintenance</h4>
@@ -103,7 +118,11 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
           <h3>Upcoming</h3>
           <div className="upcoming-card">
             <div className="task-icon-circle mint-bg">
-              🌿
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22V12" />
+                <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" fill="#059669" fillOpacity="0.3" />
+                <path d="M12 16C12 13 9.5 10.5 6.5 10.5C6.5 13.5 9 16 12 16Z" fill="#059669" fillOpacity="0.3" />
+              </svg>
             </div>
             <div className="task-info">
               <h4>Fertilizer Application</h4>
