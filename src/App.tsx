@@ -14,65 +14,63 @@ function App() {
 
   return (
     <LoadingProvider>
-      <div className="app-container">
-        {/* WELCOME */}
-        {screen === "welcome" && (
-          <div key="welcome" className="page-transition">
-            <WelcomeScreen onGetStarted={() => setScreen("login")} />
-          </div>
-        )}
+      {/* REMOVED: <div className="app-container"> */}
 
-        {/* LOGIN */}
-        {screen === "login" && (
-          <div key="login" className="page-transition">
-            <LoginScreen
-              onLoginSuccess={() => setScreen("dashboard")}
-              onBackToWelcome={() => setScreen("welcome")}
-            />
-          </div>
-        )}
+      {screen === "welcome" && (
+        <div key="welcome" className="page-transition">
+          <WelcomeScreen onGetStarted={() => setScreen("login")} />
+        </div>
+      )}
 
-        {/* DASHBOARD */}
-        {screen === "dashboard" && (
-          <div key="dashboard" className="page-transition">
-            <FarmerDashboard
-              onLogout={() => setScreen("welcome")}
-              onNavigate={(tab) => {
-                if (tab === "farms" || tab === "Farm") setScreen("farms");
-              }}
-            />
-          </div>
-        )}
+      {screen === "login" && (
+        <div key="login" className="page-transition">
+          <LoginScreen
+            onLoginSuccess={() => setScreen("dashboard")}
+            onBackToWelcome={() => setScreen("welcome")}
+          />
+        </div>
+      )}
 
-        {/* MY FARMS */}
-        {screen === "farms" && (
-          <div key="farms" className="page-transition">
-            <MyFarms
-              onSelectFarm={(farmId) => {
-                setSelectedFarmId(farmId);
-                setScreen("farm-details");
-              }}
-              onNavClick={(tab) => {
-                if (tab === "Home") setScreen("dashboard");
-              }}
-            />
-          </div>
-        )}
+      {screen === "dashboard" && (
+        <div key="dashboard" className="page-transition">
+          <FarmerDashboard
+            onLogout={() => setScreen("welcome")}
+            onNavigate={(tab) => {
+              if (tab === "farms" || tab === "Farm") setScreen("farms");
+            }}
+          />
+        </div>
+      )}
 
-        {/* FARM DETAILS */}
-        {screen === "farm-details" && (
-          <div key="farm-details" className="page-transition">
-            <FarmDetails
-              farmId={selectedFarmId || undefined}
-              onBack={() => setScreen("farms")}
-              onNavClick={(tab) => {
-                if (tab === "Home") setScreen("dashboard");
-                if (tab === "Farm") setScreen("farms");
-              }}
-            />
-          </div>
-        )}
-      </div>
+      {screen === "farms" && (
+        <div key="farms" className="page-transition">
+          <MyFarms
+            onSelectFarm={(farmId) => {
+              setSelectedFarmId(farmId);
+              setScreen("farm-details");
+            }}
+            onNavClick={(tab) => {
+              if (tab === "Home") setScreen("dashboard");
+            }}
+          />
+        </div>
+      )}
+
+      {screen === "farm-details" && (
+        <div key="farm-details" className="page-transition">
+          <FarmDetails
+            farmId={selectedFarmId || undefined}
+            onBack={() => setScreen("farms")}
+            onNavClick={(tab) => {
+              if (tab === "Home") setScreen("dashboard");
+              if (tab === "Farm") setScreen("farms");
+            }}
+          />
+        </div>
+      )}
+
+      {/* REMOVED: </div> */}
+
     </LoadingProvider>
   );
 }

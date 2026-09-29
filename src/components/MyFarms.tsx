@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../css/MyFarms.css";
+import PageLayout from "../shared/PageLayout"; 
 import AddFarmModal from "./AddFarmModal";
 import farmThumbnail from "../assets/images/farm.jfif";
 
@@ -61,15 +62,14 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
     setIsModalOpen(false);
   };
 
-  /* If App passes onAddFarm, defer to it; otherwise open local modal */
   const handleAddClick = () => {
     if (onAddFarm) onAddFarm();
     else setIsModalOpen(true);
   };
 
   return (
-    <main className="farms-page">
-      <div className="farms-card">
+    <PageLayout>
+      <div className="farms-content">
         {/* HEADER SECTION */}
         <header className="farms-header">
           <h1 className="page-title">My Farms</h1>
@@ -175,7 +175,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
           </button>
         </nav>
 
-        {/* ADD FARM MODAL (local fallback if App doesn't handle it) */}
+        {/* ADD FARM MODAL */}
         {isModalOpen && (
           <AddFarmModal
             onClose={() => setIsModalOpen(false)}
@@ -183,7 +183,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
           />
         )}
       </div>
-    </main>
+    </PageLayout>
   );
 }
 

@@ -1,4 +1,5 @@
 import "../css/FarmerDashboard.css";
+import PageLayout from "../shared/PageLayout";
 import farmImage from "../assets/images/farm.jfif";
 import farmerAvatar from "../assets/images/mada-dashboard.png";
 
@@ -9,9 +10,9 @@ interface FarmerDashboardProps {
 
 function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
   return (
-    <main className="dashboard-page">
-      <div className="dashboard-card">
-        
+    <PageLayout>
+      <div className="dashboard-content">
+
         {/* HEADER SECTION */}
         <header className="dashboard-header">
           <div className="user-greeting">
@@ -205,7 +206,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
         </nav>
 
       </div>
-    </main>
+    </PageLayout>
   );
 }
 

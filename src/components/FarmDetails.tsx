@@ -1,4 +1,5 @@
 import "../css/FarmDetails.css";
+import PageLayout from "../shared/PageLayout";
 import farmThumbnail from "../assets/images/farm.jfif";
 
 interface FarmDetailsProps {
@@ -9,9 +10,9 @@ interface FarmDetailsProps {
 
 function FarmDetails({ onBack, onNavClick }: FarmDetailsProps) {
   return (
-    <main className="details-page">
-      <div className="details-card">
-        
+    <PageLayout>
+      <div className="details-content">
+
         {/* TOP BAR / BANNER HEADER */}
         <div className="details-banner-container">
           <img src={farmThumbnail} alt="Farm Header" className="banner-image" />
@@ -156,7 +157,7 @@ function FarmDetails({ onBack, onNavClick }: FarmDetailsProps) {
         </nav>
 
       </div>
-    </main>
+    </PageLayout>
   );
 }
 

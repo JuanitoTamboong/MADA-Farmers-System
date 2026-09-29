@@ -1,28 +1,14 @@
-.dashboard-page {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3efe6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-sizing: border-box;
-}
+/* src/css/FarmerDashboard.css */
 
-.dashboard-card {
-  position: relative;
-  width: 100%;
-  max-width: 390px;
-  height: 100vh;
-  max-height: 844px;
-  background-color: #fcf9f0;
-  padding: 24px 16px 0 16px;
+/* CONTENT WRAPPER (replaces the old .dashboard-page / .dashboard-card) */
+.dashboard-content {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  height: 100%;
+  padding: 24px 16px 0 16px;
   box-sizing: border-box;
   overflow: hidden;
-
 }
 
 /* HEADER SECTION */
@@ -179,7 +165,7 @@
   backdrop-filter: blur(2px);
 }
 
-/* ACTION GRID - Locked ratio to stop tall stretching */
+/* ACTION GRID */
 .action-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -201,7 +187,7 @@
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  aspect-ratio: 1 / 1; /* Maintains compact square proportions */
+  aspect-ratio: 1 / 1;
   box-sizing: border-box;
 }
 
@@ -287,7 +273,7 @@
 
 /* BOTTOM NAV BAR */
 .bottom-nav {
-  margin-top: auto; /* Dynamically pushes nav bar to the bottom */
+  margin-top: auto;
   margin-left: -16px;
   margin-right: -16px;
   height: 64px;

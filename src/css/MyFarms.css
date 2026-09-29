@@ -1,25 +1,12 @@
-.farms-page {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #e5e5e5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-sizing: border-box;
-}
+/* src/css/MyFarms.css */
 
-.farms-card {
-  position: relative;
-  width: 100%;
-  max-width: 393px;
-  height: 100vh;
-  max-height: 852px;
-  background-color: #fcf9f0;
-  padding: 24px 16px 0 16px;
+
+.farms-content {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  padding: 24px 16px 0 16px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -73,6 +60,11 @@
   overflow-y: auto;
   flex: 1;
   padding-bottom: 16px;
+  /* Hide scrollbar for clean look */
+  scrollbar-width: none;
+}
+.farms-list::-webkit-scrollbar {
+  display: none;
 }
 
 /* FARM CARD ITEM */

@@ -1,0 +1,57 @@
+@import "../animations/animations.css";
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* Prevent scrolling on the body, let the container handle it if needed */
+  overflow: hidden; 
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #e5e5e5; /* Grey background outside the phone */
+}
+
+/* 1. The outer wrapper that centers the phone on desktop */
+.app-viewport {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+}
+
+/* 2. The actual "Phone" container used by ALL pages */
+.app-container {
+  position: relative;
+  width: 100%;
+  max-width: 393px;   /* Standard phone width */
+  height: 100vh;
+  max-height: 852px;  /* Standard phone height */
+  overflow: hidden;
+  background-color: #fcf9f0; /* Your default cream background */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* Important: allows children to position absolute relative to this */
+}
+
+/* 3. Optional: A utility class for content that needs to scroll */
+.scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  /* Hide scrollbar for clean look */
+  scrollbar-width: none; 
+}
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+}

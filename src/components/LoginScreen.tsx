@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../css/LoginScreen.css";
+import PageLayout from "../shared/PageLayout"; 
 import madaLogo from "../assets/images/maya-bird.png";
 
 interface LoginScreenProps {
@@ -19,16 +20,15 @@ function LoginScreen({ onLoginSuccess, onBackToWelcome }: LoginScreenProps) {
   };
 
   const handleGoogleLogin = () => {
-    // Implement Google OAuth logic here or call onLoginSuccess
     if (onLoginSuccess) {
       onLoginSuccess();
     }
   };
 
   return (
-    <main className="login-page">
-      <div className="login-card">
-        
+    <PageLayout>
+      <div className="login-content">
+
         {/* HEADER / BACK BUTTON */}
         <div className="login-header">
           {onBackToWelcome && (
@@ -119,7 +119,7 @@ function LoginScreen({ onLoginSuccess, onBackToWelcome }: LoginScreenProps) {
         </div>
 
       </div>
-    </main>
+    </PageLayout>
   );
 }
 
