@@ -6,7 +6,8 @@ import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
 import ProfileScreen from "./components/FarmerProfile";
 import FarmingCalendar from "./components/FarmingCalendar";
-import CropHealth from "./components/CropHealth";              // ← ADD
+import CropHealth from "./components/CropHealth";
+import FarmFinances from "./components/FarmFinances";          // ← ADD
 import { LoadingProvider } from "./context/LoadingContext";
 
 type Screen =
@@ -17,7 +18,8 @@ type Screen =
   | "farm-details"
   | "profile"
   | "calendar"
-  | "crop-health";                                            // ← ADD
+  | "crop-health"
+  | "finances";                                                // ← ADD
 
 function App() {
   const [screen, setScreen] = useState<Screen>("welcome");
@@ -41,9 +43,14 @@ function App() {
       case "calendar":
         setScreen("calendar");
         break;
-      case "CropHealth":                                      // ← ADD
+      case "CropHealth":
       case "crop-health":
         setScreen("crop-health");
+        break;
+      case "Expenses":                                         // ← ADD
+      case "expenses":
+      case "finances":
+        setScreen("finances");
         break;
       default:
         console.warn(`Unknown navigation target: ${tab}`);
@@ -116,10 +123,19 @@ function App() {
         </div>
       )}
 
-      {/* ↓ ADD — render the Crop Health screen */}
       {screen === "crop-health" && (
         <div key="crop-health" className="page-transition">
           <CropHealth onNavigate={handleNavigate} />
+        </div>
+      )}
+
+      {/* ↓ ADD — render Farm Finances */}
+      {screen === "finances" && (
+        <div key="finances" className="page-transition">
+          <FarmFinances
+            onBack={() => setScreen("dashboard")}
+            onNavigate={handleNavigate}
+          />
         </div>
       )}
     </LoadingProvider>

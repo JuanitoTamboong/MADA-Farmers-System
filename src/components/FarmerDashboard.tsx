@@ -75,7 +75,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
         {/* ACTION GRID */}
         <section className="action-grid">
 
-          {/* ✅ CROP HEALTH TILE — now navigates to the Crop Health screen */}
+          {/* CROP HEALTH TILE */}
           <button className="grid-item" onClick={() => onNavigate?.("CropHealth")}>
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,7 +87,8 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Crop Health</span>
           </button>
 
-          <button className="grid-item">
+          {/* ✅ EXPENSES TILE — now navigates to Farm Finances */}
+          <button className="grid-item" onClick={() => onNavigate?.("Expenses")}>
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2L18 2L20 7L4 7L6 2Z" />
