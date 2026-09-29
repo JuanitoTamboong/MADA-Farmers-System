@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PageLayout from "../shared/PageLayout";
 import "../css/FarmingCalendar.css";
 
@@ -23,7 +23,7 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
   return (
     <PageLayout activeTab="Tasks" onNavigate={onNavigate}>
       <div className="calendar-screen">
-        
+
         {/* HEADER */}
         <header className="calendar-header">
           <button type="button" className="calendar-back-btn" onClick={onBack}>
@@ -57,7 +57,7 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
         <section className="tasks-section">
           <h3>Today's Tasks</h3>
           <div className="task-list-card">
-            
+
             <div className="calendar-task-item">
               <div className="task-icon-circle green-bg">
                 🌱
