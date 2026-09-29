@@ -5,16 +5,22 @@ import FarmerDashboard from "./components/FarmerDashboard";
 import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
 import ProfileScreen from "./components/FarmerProfile";
+import FarmingCalendar from "./components/FarmingCalendar";   // ← ADD
 import { LoadingProvider } from "./context/LoadingContext";
 
-type Screen = "welcome" | "login" | "dashboard" | "farms" | "farm-details" | "profile";
+type Screen =
+  | "welcome"
+  | "login"
+  | "dashboard"
+  | "farms"
+  | "farm-details"
+  | "profile"
+  | "calendar";                                              // ← ADD
 
 function App() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
 
-  // Central navigation handler — accepts both BottomNav tab IDs
-  // ("Home", "Farm", "Tasks", "Profile") and legacy screen names.
   const handleNavigate = (tab: string) => {
     switch (tab) {
       case "Home":
@@ -29,9 +35,9 @@ function App() {
       case "profile":
         setScreen("profile");
         break;
-      case "Tasks":
-        // TODO: add a Tasks screen when available
-        console.log("Tasks screen not implemented yet");
+      case "Tasks":                                          // ← FIX: actually navigate
+      case "calendar":
+        setScreen("calendar");
         break;
       default:
         console.warn(`Unknown navigation target: ${tab}`);
@@ -90,6 +96,16 @@ function App() {
         <div key="profile" className="page-transition">
           <ProfileScreen
             onLogout={() => setScreen("welcome")}
+            onNavigate={handleNavigate}
+          />
+        </div>
+      )}
+
+      {/* ↓ ADD — render the calendar when the Tasks tab is tapped */}
+      {screen === "calendar" && (
+        <div key="calendar" className="page-transition">
+          <FarmingCalendar
+            onBack={() => setScreen("dashboard")}
             onNavigate={handleNavigate}
           />
         </div>

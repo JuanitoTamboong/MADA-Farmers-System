@@ -107,7 +107,8 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Market Prices</span>
           </button>
 
-          <button className="grid-item">
+          {/* ✅ CALENDAR TILE — now navigates to the Tasks/Calendar screen */}
+          <button className="grid-item" onClick={() => onNavigate?.("Tasks")}>
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="3" />
@@ -163,9 +164,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             </div>
           </div>
         </section>
-
-        {/* ❌ The inline <BottomNav /> is gone.
-            The shared nav is now rendered by <PageLayout>. */}
 
       </div>
     </PageLayout>

@@ -1,0 +1,172 @@
+/* src/css/FarmingCalendar.css */
+
+.calendar-screen {
+  padding: 16px 20px 32px 20px;
+  background-color: #fcf9f0;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.calendar-back-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #1b4d2e;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.calendar-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0d2818;
+}
+
+/* MONTH SELECTOR */
+.month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.month-selector h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1b4d2e;
+}
+
+.month-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: #1b4d2e;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* WEEK GRID */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+  border-radius: 20px;
+}
+
+.day-name {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.week-day.active .day-number {
+  background: #1b4d2e;
+  color: #ffffff;
+}
+
+/* TASKS SECTION */
+.tasks-section h3,
+.upcoming-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0d2818;
+}
+
+.task-list-card,
+.upcoming-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.calendar-task-item,
+.upcoming-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.task-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 12px 0;
+}
+
+.task-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.green-bg { background-color: #e2f1e5; }
+.yellow-bg { background-color: #fef3c7; }
+.red-bg { background-color: #fee2e2; }
+.mint-bg { background-color: #d1fae5; }
+
+.task-info h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b4d2e;
+}
+
+.task-info p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.task-time {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+}
+
+.upcoming-section {
+  margin-top: 20px;
+}
