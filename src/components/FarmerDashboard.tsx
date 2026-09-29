@@ -1,7 +1,7 @@
-import "../css/FarmerDashboard.css";
 import PageLayout from "../shared/PageLayout";
 import farmImage from "../assets/images/farm.jfif";
 import farmerAvatar from "../assets/images/mada-dashboard.png";
+import "../css/FarmerDashboard.css";
 
 interface FarmerDashboardProps {
   onLogout?: () => void;
@@ -10,7 +10,7 @@ interface FarmerDashboardProps {
 
 function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
   return (
-    <PageLayout>
+    <PageLayout activeTab="Home" onNavigate={onNavigate}>
       <div className="dashboard-content">
 
         {/* HEADER SECTION */}
@@ -54,9 +54,9 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
         </section>
 
         {/* MY FARMS BANNER */}
-        <section 
-          className="my-farms-banner" 
-          onClick={() => onNavigate && onNavigate("farms")} 
+        <section
+          className="my-farms-banner"
+          onClick={() => onNavigate?.("Farm")}
           style={{ cursor: "pointer" }}
         >
           <img src={farmImage} alt="Farm" className="farms-bg" />
@@ -74,7 +74,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
 
         {/* ACTION GRID */}
         <section className="action-grid">
-          {/* Crop Health */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -86,7 +85,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Crop Health</span>
           </button>
 
-          {/* Expenses */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -98,7 +96,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Expenses</span>
           </button>
 
-          {/* Market Prices */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,7 +107,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Market Prices</span>
           </button>
 
-          {/* Calendar */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -124,7 +120,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Calendar</span>
           </button>
 
-          {/* Announcements */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -136,7 +131,6 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Announcements</span>
           </button>
 
-          {/* Assistance */}
           <button className="grid-item">
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -170,40 +164,8 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
           </div>
         </section>
 
-        {/* BOTTOM NAVIGATION BAR */}
-        <nav className="bottom-nav">
-          <button className="nav-item active" onClick={() => onNavigate && onNavigate("dashboard")}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-            <span>Home</span>
-          </button>
-
-          <button className="nav-item" onClick={() => onNavigate && onNavigate("farms")}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 22V12" />
-              <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" />
-              <path d="M12 16C12 13 9.5 10.5 6.5 10.5C6.5 13.5 9 16 12 16Z" />
-            </svg>
-            <span>Farm</span>
-          </button>
-
-          <button className="nav-item">
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-            <span>Tasks</span>
-          </button>
-
-          <button className="nav-item">
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span>Profile</span>
-          </button>
-        </nav>
+        {/* ❌ The inline <BottomNav /> is gone.
+            The shared nav is now rendered by <PageLayout>. */}
 
       </div>
     </PageLayout>

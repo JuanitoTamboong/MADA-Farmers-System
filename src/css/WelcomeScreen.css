@@ -1,8 +1,5 @@
 /* src/css/WelcomeScreen.css */
 
-/* Remove the generic resets and container styles. 
-   Keep only the specific Welcome Screen elements. */
-
 /* BACKGROUND STACK */
 .background-stack {
   position: absolute;
@@ -53,8 +50,6 @@
   flex-shrink: 0;
 }
 
-/* ... keep rest of your brand, hero, bottom-controls, button, pagination styles ... */
-
 .brand {
   display: flex;
   align-items: center;
@@ -103,22 +98,25 @@
   font-weight: 500;
 }
 
+/* BOTTOM CONTROLS - PINNED WITH SAFE PADDING */
 .bottom-controls {
-  position: relative;
-  z-index: 5;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
   width: 100%;
-  padding: 0 24px 32px 24px;
+  padding: 0 24px 36px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  flex-shrink: 0;
-  margin-top: auto; /* Push to bottom */
+  gap: 16px;
+  box-sizing: border-box;
 }
 
 .get-started {
   width: 100%;
-  height: 54px;
+  height: 52px;
   border-radius: 28px;
   border: 1.5px solid rgba(255, 255, 255, 0.6);
   background: #557843;
@@ -126,7 +124,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: background 0.2s ease, transform 0.1s ease;
 }
 

@@ -1,6 +1,5 @@
 /* src/css/MyFarms.css */
 
-
 .farms-content {
   display: flex;
   flex-direction: column;
@@ -60,7 +59,6 @@
   overflow-y: auto;
   flex: 1;
   padding-bottom: 16px;
-  /* Hide scrollbar for clean look */
   scrollbar-width: none;
 }
 .farms-list::-webkit-scrollbar {
@@ -198,54 +196,3 @@
   font-weight: 700;
 }
 
-/* BOTTOM NAVIGATION BAR */
-.bottom-nav {
-  margin-top: auto;
-  margin-left: -16px;
-  margin-right: -16px;
-  height: 64px;
-  background: #ffffff;
-  border-top: 1px solid #eae6d9;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 8px;
-  flex-shrink: 0;
-}
-
-.nav-item {
-  background: none;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: #8fa091;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.nav-item.active {
-  color: #1b4d2e;
-}
-
-.active-pill {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #1b4d2e;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.active-pill .nav-icon {
-  stroke: #ffffff;
-}
-
-.nav-icon {
-  width: 20px;
-  height: 20px;
-}

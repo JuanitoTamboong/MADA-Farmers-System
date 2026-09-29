@@ -1,8 +1,9 @@
 import { useState } from "react";
 import "../css/MyFarms.css";
-import PageLayout from "../shared/PageLayout"; 
+import PageLayout from "../shared/PageLayout";
 import AddFarmModal from "./AddFarmModal";
 import farmThumbnail from "../assets/images/farm.jfif";
+// ❌ DELETED: import BottomNav from "../navigation/BottomNav";
 
 interface FarmItem {
   id: string;
@@ -44,10 +45,10 @@ const initialFarmsData: FarmItem[] = [
 interface MyFarmsProps {
   onAddFarm?: () => void;
   onSelectFarm?: (id: string) => void;
-  onNavClick?: (tab: string) => void;
+  onNavigate?: (tab: string) => void;
 }
 
-function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
+function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
   const [farms, setFarms] = useState<FarmItem[]>(initialFarmsData);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -68,7 +69,8 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
   };
 
   return (
-    <PageLayout>
+    // ✅ PageLayout receives activeTab + onNavigate — the shared nav now works
+    <PageLayout activeTab="Farm" onNavigate={onNavigate}>
       <div className="farms-content">
         {/* HEADER SECTION */}
         <header className="farms-header">
@@ -138,42 +140,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavClick }: MyFarmsProps) {
           ))}
         </div>
 
-        {/* BOTTOM NAVIGATION BAR */}
-        <nav className="bottom-nav">
-          <button className="nav-item" onClick={() => onNavClick && onNavClick("Home")}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-            <span>Home</span>
-          </button>
-
-          <button className="nav-item active" onClick={() => onNavClick && onNavClick("Farm")}>
-            <div className="active-pill">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22V12" />
-                <path d="M12 12C12 7.5 15.5 4 20 4C20 8.5 16.5 12 12 12Z" />
-                <path d="M12 16C12 13 9.5 10.5 6.5 10.5C6.5 13.5 9 16 12 16Z" />
-              </svg>
-            </div>
-            <span>Farm</span>
-          </button>
-
-          <button className="nav-item" onClick={() => onNavClick && onNavClick("Tasks")}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-            <span>Tasks</span>
-          </button>
-
-          <button className="nav-item" onClick={() => onNavClick && onNavClick("Profile")}>
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span>Profile</span>
-          </button>
-        </nav>
+        {/* ❌ DELETED: <BottomNav activeTab="Farm" onNavigate={onNavigate} /> */}
 
         {/* ADD FARM MODAL */}
         {isModalOpen && (

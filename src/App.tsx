@@ -4,18 +4,42 @@ import LoginScreen from "./components/LoginScreen";
 import FarmerDashboard from "./components/FarmerDashboard";
 import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
+import ProfileScreen from "./components/FarmerProfile";
 import { LoadingProvider } from "./context/LoadingContext";
 
-type Screen = "welcome" | "login" | "dashboard" | "farms" | "farm-details";
+type Screen = "welcome" | "login" | "dashboard" | "farms" | "farm-details" | "profile";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
 
+  // Central navigation handler — accepts both BottomNav tab IDs
+  // ("Home", "Farm", "Tasks", "Profile") and legacy screen names.
+  const handleNavigate = (tab: string) => {
+    switch (tab) {
+      case "Home":
+      case "dashboard":
+        setScreen("dashboard");
+        break;
+      case "Farm":
+      case "farms":
+        setScreen("farms");
+        break;
+      case "Profile":
+      case "profile":
+        setScreen("profile");
+        break;
+      case "Tasks":
+        // TODO: add a Tasks screen when available
+        console.log("Tasks screen not implemented yet");
+        break;
+      default:
+        console.warn(`Unknown navigation target: ${tab}`);
+    }
+  };
+
   return (
     <LoadingProvider>
-      {/* REMOVED: <div className="app-container"> */}
-
       {screen === "welcome" && (
         <div key="welcome" className="page-transition">
           <WelcomeScreen onGetStarted={() => setScreen("login")} />
@@ -35,9 +59,7 @@ function App() {
         <div key="dashboard" className="page-transition">
           <FarmerDashboard
             onLogout={() => setScreen("welcome")}
-            onNavigate={(tab) => {
-              if (tab === "farms" || tab === "Farm") setScreen("farms");
-            }}
+            onNavigate={handleNavigate}
           />
         </div>
       )}
@@ -49,9 +71,7 @@ function App() {
               setSelectedFarmId(farmId);
               setScreen("farm-details");
             }}
-            onNavClick={(tab) => {
-              if (tab === "Home") setScreen("dashboard");
-            }}
+            onNavigate={handleNavigate}
           />
         </div>
       )}
@@ -61,16 +81,19 @@ function App() {
           <FarmDetails
             farmId={selectedFarmId || undefined}
             onBack={() => setScreen("farms")}
-            onNavClick={(tab) => {
-              if (tab === "Home") setScreen("dashboard");
-              if (tab === "Farm") setScreen("farms");
-            }}
+            onNavigate={handleNavigate}
           />
         </div>
       )}
 
-      {/* REMOVED: </div> */}
-
+      {screen === "profile" && (
+        <div key="profile" className="page-transition">
+          <ProfileScreen
+            onLogout={() => setScreen("welcome")}
+            onNavigate={handleNavigate}
+          />
+        </div>
+      )}
     </LoadingProvider>
   );
 }

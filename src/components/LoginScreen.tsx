@@ -26,7 +26,7 @@ function LoginScreen({ onLoginSuccess, onBackToWelcome }: LoginScreenProps) {
   };
 
   return (
-    <PageLayout>
+    <PageLayout hideNav={true}>
       <div className="login-content">
 
         {/* HEADER / BACK BUTTON */}

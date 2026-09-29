@@ -21,7 +21,7 @@ function WelcomeScreen({ onGetStarted }: { onGetStarted?: () => void }) {
   }, []);
 
   return (
-    <PageLayout>
+    <PageLayout hideNav={true}>
       
       {/* BACKGROUND STACK */}
       <div className="background-stack">
