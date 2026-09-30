@@ -101,8 +101,17 @@ function MarketPrices({ onNavigate }: MarketPricesProps) {
             onClick={() => onNavigate?.("Home")}
             aria-label="Go Back"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="#1B4D2E"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
           <h1 className="market-title">Market Prices</h1>

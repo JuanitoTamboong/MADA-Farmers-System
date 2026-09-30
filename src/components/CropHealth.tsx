@@ -20,15 +20,24 @@ export default function CropHealth({ onNavigate }: CropHealthProps) {
   return (
     <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
       <div className="crop-health-container">
-        
+
         {/* TOP NAVIGATION BAR */}
         <header className="crop-health-header">
-          <button 
-            className="back-btn" 
+          <button
+            className="back-btn"
             onClick={() => onNavigate?.("Home")}
             aria-label="Go Back"
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="#1B4D2E"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
@@ -37,10 +46,10 @@ export default function CropHealth({ onNavigate }: CropHealthProps) {
 
         {/* IMAGE PREVIEW HERO */}
         <div className="crop-banner-wrapper">
-          <img 
-            src={selectedImage || "https://via.placeholder.com/400x160"} 
-            alt="Crop sample" 
-            className="crop-banner-img" 
+          <img
+            src={selectedImage || "https://via.placeholder.com/400x160"}
+            alt="Crop sample"
+            className="crop-banner-img"
           />
         </div>
 
@@ -52,22 +61,22 @@ export default function CropHealth({ onNavigate }: CropHealthProps) {
               <circle cx="12" cy="13" r="4" />
             </svg>
             Take Photo
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="environment" 
-              onChange={handleImageUpload} 
-              style={{ display: "none" }} 
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageUpload}
+              style={{ display: "none" }}
             />
           </label>
-          
+
           <label className="upload-gallery-link">
             or Upload from Gallery
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageUpload} 
-              style={{ display: "none" }} 
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: "none" }}
             />
           </label>
         </div>

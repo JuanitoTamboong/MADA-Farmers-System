@@ -102,16 +102,25 @@ export default function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) 
 
         {/* TOP HEADER */}
         <header className="finances-header">
-          <button 
-            className="finances-back-btn" 
-            onClick={onBack || (() => onNavigate?.("Home"))} 
+          <button
+            className="finances-back-btn"
+            onClick={onBack || (() => onNavigate?.("Home"))}
             aria-label="Go Back"
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="#1B4D2E"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <h2>Farm Finances</h2>
+          <h2 className="finances-title">Farm Finances</h2>
         </header>
 
         {/* SUMMARY CARDS */}
@@ -157,13 +166,13 @@ export default function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) 
 
         {/* EXPENSES / INCOME SEGMENTED CONTROL */}
         <div className="finances-toggle-pill">
-          <button 
+          <button
             className={`toggle-btn ${activeTab === "Expenses" ? "active" : ""}`}
             onClick={() => setActiveTab("Expenses")}
           >
             Expenses
           </button>
-          <button 
+          <button
             className={`toggle-btn ${activeTab === "Income" ? "active" : ""}`}
             onClick={() => setActiveTab("Income")}
           >
