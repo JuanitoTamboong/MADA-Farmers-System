@@ -111,6 +111,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Market Prices</span>
           </button>
 
+          {/* CALENDAR TILE */}
           <button className="grid-item" onClick={() => onNavigate?.("Tasks")}>
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -136,12 +137,11 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             <span>Announcements</span>
           </button>
 
-          {/* ✅ ASSISTANCE TILE — now navigates to Assistance Request */}
+          {/* ✅ ASSISTANCE TILE — NEW ICON (Helping Hands) */}
           <button className="grid-item" onClick={() => onNavigate?.("Assistance")}>
             <div className="grid-icon-box">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1B4D2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" />
-                <circle cx="12" cy="9" r="2.5" fill="#1B4D2E" />
+                <path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10" />
               </svg>
             </div>
             <span>Assistance</span>
