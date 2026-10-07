@@ -1,6 +1,7 @@
 import { useState } from "react";
 import WelcomeScreen from "./components/WelcomeScreen";
 import LoginScreen from "./components/LoginScreen";
+import RegisterScreen from "./components/RegisterScreen";
 import FarmerDashboard from "./components/FarmerDashboard";
 import MyFarms from "./components/MyFarms";
 import FarmDetails from "./components/FarmDetails";
@@ -16,6 +17,7 @@ import { LoadingProvider } from "./context/LoadingContext";
 type Screen =
   | "welcome"
   | "login"
+  | "register"
   | "dashboard"
   | "farms"
   | "farm-details"
@@ -91,6 +93,16 @@ function App() {
           <LoginScreen
             onLoginSuccess={() => setScreen("dashboard")}
             onBackToWelcome={() => setScreen("welcome")}
+            onNavigateToRegister={() => setScreen("register")}
+          />
+        </div>
+      )}
+
+      {screen === "register" && (
+        <div key="register" className="page-transition">
+          <RegisterScreen
+            onRegisterSuccess={() => setScreen("dashboard")}
+            onBackToLogin={() => setScreen("login")}
           />
         </div>
       )}
