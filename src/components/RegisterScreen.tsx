@@ -3,6 +3,7 @@ import "../css/RegisterScreen.css";
 import PageLayout from "../shared/PageLayout";
 import madaLogo from "../assets/images/maya-bird.png";
 import { supabase } from "../supabase/supabase-client";
+import { Eye, EyeOff } from "lucide-react";
 
 interface RegisterScreenProps {
   onRegisterSuccess?: () => void;
@@ -18,6 +19,8 @@ function RegisterScreen({
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -132,34 +135,64 @@ function RegisterScreen({
 
           <div className="register-input-group">
             <label htmlFor="register-password">Password</label>
-            <input
-              id="register-password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Create a password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={6}
-            />
+            <div className="register-password-field">
+              <input
+                id="register-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="register-password-toggle"
+                onClick={() => setShowPassword((shown) => !shown)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <div className="register-input-group">
             <label htmlFor="register-confirm-password">
               Confirm Password
             </label>
-            <input
-              id="register-confirm-password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-              aria-describedby={
-                passwordError ? "register-password-error" : undefined
-              }
-            />
+            <div className="register-password-field">
+              <input
+                id="register-confirm-password"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+                aria-describedby={
+                  passwordError ? "register-password-error" : undefined
+                }
+              />
+              <button
+                type="button"
+                className="register-password-toggle"
+                onClick={() => setShowConfirmPassword((shown) => !shown)}
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+                aria-pressed={showConfirmPassword}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
           </div>
 
           {passwordError && (

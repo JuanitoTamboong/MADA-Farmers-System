@@ -104,6 +104,35 @@
   transition: border-color 0.2s ease;
 }
 
+.register-password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.register-password-field input {
+  padding-right: 48px;
+}
+
+.register-password-toggle {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.register-password-toggle:focus-visible {
+  outline: 2px solid #1b4d2e;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .register-input-group input:focus {
   border-color: #1b4d2e;
 }
