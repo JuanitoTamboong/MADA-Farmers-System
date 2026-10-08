@@ -1,3 +1,4 @@
+/* src/css/FarmDetails.css */
 
 .details-content {
   position: relative;
@@ -66,7 +67,6 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  /* Hide scrollbar for clean look */
   scrollbar-width: none;
 }
 .details-body::-webkit-scrollbar {
@@ -242,6 +242,16 @@
   background: #fef3c7;
 }
 
+/* Pending activity state */
+.activity-card.pending .status-icon {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.activity-card.pending .status-text {
+  color: #6b7280;
+}
+
 .activity-info h4 {
   margin: 0;
   font-size: 13px;
@@ -269,52 +279,15 @@
   font-weight: 700;
 }
 
-/* BOTTOM NAV BAR (shared with other pages) */
-.bottom-nav {
-  margin-top: auto;
-  height: 64px;
-  background: #ffffff;
-  border-top: 1px solid #eae6d9;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 8px;
-  flex-shrink: 0;
-}
-
-.nav-item {
-  background: none;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: #8fa091;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.nav-item.active {
-  color: #1b4d2e;
-}
-
-.active-pill {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #1b4d2e;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.active-pill .nav-icon {
-  stroke: #ffffff;
-}
-
-.nav-icon {
-  width: 20px;
-  height: 20px;
+/* ERROR STATE (used when a farm fails to load) */
+.details-error {
+  margin: 24px 0;
+  padding: 20px 16px;
+  text-align: center;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.55;
 }

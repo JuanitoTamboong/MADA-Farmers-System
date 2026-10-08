@@ -1,23 +1,36 @@
-import { useState, useRef } from "react";
-import { createPortal } from "react-dom";
-import "../css/AddFarmModal.css";
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import '../css/AddFarmModal.css';
 
-interface AddFarmModalProps {
-  onClose: () => void;
-  onSave: (newFarm: any) => void;
+export interface FarmFormPayload {
+  name: string;
+  location: string;
+  area: string;             // raw numeric string, e.g. "2.5"
+  crop: string;
+  variety?: string;
+  status?: string;
+  plantedDate?: string;     // "YYYY-MM-DD"
+  expectedHarvest?: string; // "YYYY-MM-DD"
+  image?: string | null;    // base64 data URL or null
 }
 
-function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
+interface AddFarmModalProps {
+  saving?: boolean;
+  onClose: () => void;
+  onSave: (payload: FarmFormPayload) => void | Promise<void>;   // ← THE FIX
+}
+
+function AddFarmModal({ saving = false, onClose, onSave }: AddFarmModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
-    name: "",
-    location: "Odiongan, Romblon",
-    area: "",
-    crop: "Rice",
-    variety: "",
-    plantedDate: "",
-    expectedHarvest: "",
+    name: '',
+    location: 'Odiongan, Romblon',
+    area: '',
+    crop: 'Rice',
+    variety: '',
+    plantedDate: '',
+    expectedHarvest: '',
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -35,16 +48,24 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
 
   const handleRemoveImage = () => {
     setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 🚫 Already saving — ignore extra submits.
+    if (saving) return;
+
     onSave({
-      ...form,
-      id: Date.now().toString(),
-      status: "Growing",
-      area: `${form.area} hectares`,
+      name: form.name,
+      location: form.location,
+      area: form.area,
+      crop: form.crop,
+      variety: form.variety || undefined,
+      status: 'Growing',
+      plantedDate: form.plantedDate || undefined,
+      expectedHarvest: form.expectedHarvest || undefined,
       image: imagePreview,
     });
   };
@@ -54,8 +75,13 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
       <div className="modal-content page-transition">
         <div className="modal-header">
           <h2>Add New Farm</h2>
-          {/* ✅ type="button" so ✕ doesn't submit the form */}
-          <button type="button" className="close-btn" onClick={onClose}>
+          <button
+            type="button"
+            className="close-btn"
+            onClick={onClose}
+            disabled={saving}
+            aria-label="Close"
+          >
             ✕
           </button>
         </div>
@@ -77,6 +103,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
                     className="remove-photo-btn"
                     onClick={handleRemoveImage}
                     aria-label="Remove photo"
+                    disabled={saving}
                   >
                     ✕
                   </button>
@@ -86,6 +113,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
                   type="button"
                   className="photo-upload-btn"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={saving}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -122,6 +150,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
               placeholder="e.g. San Jose Farm"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
+              disabled={saving}
             />
           </div>
 
@@ -133,6 +162,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
               placeholder="e.g. Odiongan, Romblon"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
+              disabled={saving}
             />
           </div>
 
@@ -142,10 +172,12 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
               <input
                 type="number"
                 step="0.1"
+                min="0.1"
                 required
                 placeholder="2.5"
                 value={form.area}
                 onChange={(e) => setForm({ ...form, area: e.target.value })}
+                disabled={saving}
               />
             </div>
 
@@ -154,6 +186,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
               <select
                 value={form.crop}
                 onChange={(e) => setForm({ ...form, crop: e.target.value })}
+                disabled={saving}
               >
                 <option value="Rice">Rice</option>
                 <option value="Corn">Corn</option>
@@ -169,6 +202,7 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
               placeholder="e.g. NSIC Rc 222"
               value={form.variety}
               onChange={(e) => setForm({ ...form, variety: e.target.value })}
+              disabled={saving}
             />
           </div>
 
@@ -179,7 +213,10 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
                 type="date"
                 required
                 value={form.plantedDate}
-                onChange={(e) => setForm({ ...form, plantedDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, plantedDate: e.target.value })
+                }
+                disabled={saving}
               />
             </div>
 
@@ -189,13 +226,20 @@ function AddFarmModal({ onClose, onSave }: AddFarmModalProps) {
                 type="date"
                 required
                 value={form.expectedHarvest}
-                onChange={(e) => setForm({ ...form, expectedHarvest: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, expectedHarvest: e.target.value })
+                }
+                disabled={saving}
               />
             </div>
           </div>
 
-          <button type="submit" className="save-farm-btn">
-            Save Farm
+          <button
+            type="submit"
+            className="save-farm-btn"
+            disabled={saving}
+          >
+            {saving ? 'Saving…' : 'Save Farm'}
           </button>
         </form>
       </div>
