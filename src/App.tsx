@@ -150,7 +150,6 @@ function App() {
       {screen === "calendar" && (
         <div key="calendar" className="page-transition">
           <FarmingCalendar
-            onBack={() => setScreen("dashboard")}
             onNavigate={handleNavigate}
           />
         </div>
