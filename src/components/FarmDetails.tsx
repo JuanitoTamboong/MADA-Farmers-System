@@ -231,7 +231,6 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
       <PageLayout activeTab="Farm" onNavigate={onNavigate}>
         <div className="details-content">
           <div className="details-banner-container">
-            <div className="banner-image-placeholder" aria-hidden="true" />
             <div className="banner-top-bar">
               <button
                 className="icon-btn back-btn"
@@ -250,7 +249,10 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
                 </svg>
               </button>
               <h1 className="banner-title">Farm Details</h1>
-              <span />
+              <span className="banner-action-spacer" aria-hidden="true" />
+            </div>
+            <div className="details-banner-image">
+              <div className="banner-image-placeholder" aria-hidden="true" />
             </div>
           </div>
           <div className="details-body">
@@ -269,11 +271,6 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
       <div className="details-content">
         {/* BANNER */}
         <div className="details-banner-container">
-          {farm.image_url ? (
-            <img src={farm.image_url} alt={farm.name} className="banner-image" />
-          ) : (
-            <div className="banner-image-placeholder" aria-hidden="true" />
-          )}
           <div className="banner-top-bar">
             <button
               className="icon-btn back-btn"
@@ -292,7 +289,14 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
               </svg>
             </button>
             <h1 className="banner-title">Farm Details</h1>
-            <span />
+            <span className="banner-action-spacer" aria-hidden="true" />
+          </div>
+          <div className="details-banner-image">
+            {farm.image_url ? (
+              <img src={farm.image_url} alt={`${farm.name} farm`} className="banner-image" />
+            ) : (
+              <div className="banner-image-placeholder" aria-hidden="true" />
+            )}
           </div>
         </div>
 
