@@ -1,156 +1,383 @@
-import React, { useState } from "react";
-import PageLayout from "../shared/PageLayout";
-import PageHeader from "../shared/PageHeader";
-import cropBanner from "../assets/images/farm2.jpg";
-import "../css/CropHealth.css";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import PageLayout from '../shared/PageLayout';
+import PageHeader from '../shared/PageHeader';
+import { supabase } from '../supabase/supabase-client';
+import { useFarmerProfile } from '../hooks/useFarmerProfile';
+import '../css/CropHealth.css';
 
 interface CropHealthProps {
   onNavigate?: (screen: string) => void;
 }
 
-export default function CropHealth({ onNavigate }: CropHealthProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(cropBanner);
+interface ReportRow {
+  id: string;
+  note: string | null;
+  image_path: string;
+  status: 'pending' | 'reviewed' | 'resolved';
+  admin_note: string | null;
+  created_at: string;
+}
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function statusLabel(status: ReportRow['status']): string {
+  if (status === 'resolved') return 'Resolved';
+  if (status === 'reviewed') return 'Reviewed';
+  return 'Pending';
+}
+
+function CropHealth({ onNavigate }: CropHealthProps) {
+  const { profile, loading: profileLoading, error: profileError } =
+    useFarmerProfile();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [reportsError, setReportsError] = useState<string | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  // ---- load past reports for this farmer ----
+  const loadReports = useCallback(async () => {
+    if (!profile) return;
+    setReportsLoading(true);
+    setReportsError(null);
+
+    const { data, error } = await supabase
+      .from('pest_reports')
+      .select('id, note, image_path, status, admin_note, created_at')
+      .eq('farmer_id', profile.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setReportsError(error.message);
+      setReports([]);
+      setReportsLoading(false);
+      return;
     }
+
+    setReports(data as ReportRow[]);
+
+    // Pre-sign each image URL so <img> can render them from a private bucket.
+    if (data && data.length > 0) {
+      const paths = data.map((r) => r.image_path);
+      const { data: signed } = await supabase.storage
+        .from('pest-reports')
+        .createSignedUrls(paths, 60 * 60); // 1 hour
+
+      if (signed) {
+        const map: Record<string, string> = {};
+        signed.forEach((s) => {
+          if (s.path && s.signedUrl) map[s.path] = s.signedUrl;
+        });
+        setSignedUrls(map);
+      }
+    }
+
+    setReportsLoading(false);
+  }, [profile]);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
+
+  // ---- free object URL when selection changes or unmount ----
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    if (!picked) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setFile(picked);
+    setPreviewUrl(URL.createObjectURL(picked));
   };
+
+  const clearSelection = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setFile(null);
+    setPreviewUrl(null);
+    setNote('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile || !file) return;
+    if (submittingRef.current) return;
+
+    submittingRef.current = true;
+    setSubmitting(true);
+    setReportsError(null);
+
+    const ext =
+      file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : 'jpg';
+    const path = `${profile.id}/${crypto.randomUUID()}.${ext}`;
+
+    // 1) Upload image
+    const { error: uploadError } = await supabase.storage
+      .from('pest-reports')
+      .upload(path, file, { cacheControl: '3600', upsert: false });
+
+    if (uploadError) {
+      submittingRef.current = false;
+      setSubmitting(false);
+      setReportsError(uploadError.message);
+      return;
+    }
+
+    // 2) Insert report row
+    const { error: dbError } = await supabase.from('pest_reports').insert({
+      farmer_id: profile.id,
+      note: note.trim() || null,
+      image_path: path,
+      status: 'pending',
+    });
+
+    if (dbError) {
+      // Roll back the uploaded image
+      await supabase.storage.from('pest-reports').remove([path]);
+      submittingRef.current = false;
+      setSubmitting(false);
+      setReportsError(dbError.message);
+      return;
+    }
+
+    submittingRef.current = false;
+    setSubmitting(false);
+    clearSelection();
+    await loadReports();
+  };
+
+  const handleDelete = async (report: ReportRow) => {
+    if (!profile) return;
+    if (report.status !== 'pending') return;
+    const confirmed = window.confirm('Delete this report?');
+    if (!confirmed) return;
+
+    // Remove storage object, then DB row
+    await supabase.storage.from('pest-reports').remove([report.image_path]);
+    await supabase.from('pest_reports').delete().eq('id', report.id);
+    await loadReports();
+  };
+
+  // ---- render gates ----
+  if (profileLoading) {
+    return (
+      <PageLayout
+        activeTab="Home"
+        onNavigate={onNavigate}
+        hideNav
+        loading
+        loadingText="Loading…"
+      >
+        {null}
+      </PageLayout>
+    );
+  }
+
+  if (profileError || !profile) {
+    return (
+      <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
+        <div className="crop-health-container">
+          <PageHeader
+            title="Pest & Disease Report"
+            onBack={() => onNavigate?.('Home')}
+          />
+          <p className="crop-health-error" role="alert">
+            {profileError ?? 'Unable to load your profile.'}
+          </p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
       <div className="crop-health-container">
-
         <PageHeader
           title="Pest & Disease Report"
-          onBack={() => onNavigate?.("Home")}
+          onBack={() => onNavigate?.('Home')}
         />
 
-        {/* IMAGE PREVIEW HERO */}
+        {/* IMAGE PREVIEW */}
         <div className="crop-banner-wrapper">
-          <img
-            src={selectedImage || "https://via.placeholder.com/400x160"}
-            alt="Crop sample"
-            className="crop-banner-img"
-          />
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="Selected crop"
+              className="crop-banner-img"
+            />
+          ) : (
+            <div className="crop-banner-empty">
+              <p>No photo selected yet</p>
+              <span>Take a clear close-up of the affected plant part.</span>
+            </div>
+          )}
         </div>
 
-        {/* PHOTO ACTION BUTTONS */}
+        {/* PHOTO ACTIONS */}
         <div className="upload-actions">
-          <label className="take-photo-btn">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            type="button"
+            className="take-photo-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={submitting}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
               <circle cx="12" cy="13" r="4" />
             </svg>
-            Take Photo
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleImageUpload}
-              style={{ display: "none" }}
-            />
-          </label>
+            {file ? 'Change Photo' : 'Take or Choose Photo'}
+          </button>
 
-          <label className="upload-gallery-link">
-            or Upload from Gallery
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ display: "none" }}
-            />
-          </label>
+          {file && (
+            <button
+              type="button"
+              className="upload-gallery-link"
+              onClick={clearSelection}
+              disabled={submitting}
+            >
+              Remove photo
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
         </div>
 
-        {/* AI DETECTION RESULT CARD */}
-        <div className="ai-detection-section">
-          <div className="section-title">
-            <span>AI Detection</span>
-            <span className="optional-tag">(Optional)</span>
+        {/* NOTE + SUBMIT */}
+        <form className="report-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="report-note">
+              What did you notice? (optional)
+            </label>
+            <textarea
+              id="report-note"
+              rows={3}
+              placeholder="e.g. Brown spots appeared 3 days ago on lower leaves."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              disabled={submitting}
+            />
           </div>
 
-          <div className="detection-card">
-            {/* CARD TOP INFO */}
-            <div className="disease-header">
-              <div className="disease-thumb-wrapper">
-                <img src={selectedImage || ""} alt="Disease sample" className="disease-thumb" />
-              </div>
-              <div className="disease-title-area">
-                <span className="disease-sub">Possible Disease</span>
-                <h3 className="disease-name">Rice Blast</h3>
-              </div>
-              <div className="confidence-badge">82%</div>
-            </div>
+          {reportsError && (
+            <p className="crop-health-error" role="alert">
+              {reportsError}
+            </p>
+          )}
 
-            {/* SYMPTOMS & ACTION */}
-            <div className="disease-body">
-              <div className="detail-row">
-                <div className="detail-icon">
-                  <svg width="28" height="12" viewBox="0 0 28 12" fill="none">
-                    <circle cx="3" cy="6" r="2.5" fill="#C5CEB8" />
-                    <line x1="5.5" y1="6" x2="21" y2="6" stroke="#C5CEB8" strokeWidth="1.5" />
-                    <path d="M18 3L23 6L18 9" stroke="#C5CEB8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="detail-content">
-                  <span className="detail-label">Symptoms</span>
-                  <p>Brown lesions on leaves, yellowing of edges.</p>
-                </div>
-              </div>
+          <button
+            type="submit"
+            className="submit-report-btn"
+            disabled={!file || submitting}
+          >
+            {submitting ? 'Sending…' : 'Send Report to Admin'}
+          </button>
+        </form>
 
-              <div className="detail-row">
-                <div className="detail-icon">
-                  <svg width="28" height="12" viewBox="0 0 28 12" fill="none">
-                    <circle cx="3" cy="6" r="2.5" fill="#C5CEB8" />
-                    <line x1="5.5" y1="6" x2="21" y2="6" stroke="#C5CEB8" strokeWidth="1.5" />
-                    <path d="M18 3L23 6L18 9" stroke="#C5CEB8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="detail-content">
-                  <span className="detail-label">Recommended Action</span>
-                  <p>Remove heavily affected plants and avoid water stress.</p>
-                </div>
-              </div>
-            </div>
+        {/* PAST REPORTS */}
+        <section className="reports-section">
+          <h3 className="section-title">My Reports</h3>
 
-            {/* CARD FOOTER METRICS */}
-            <div className="disease-footer">
-              <div className="metric-box">
-                <span className="metric-label">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "4px", verticalAlign: "middle" }}>
-                    <circle cx="12" cy="12" r="9" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  Severity
-                </span>
-                <span className="metric-value severity-high">
-                  <svg width="10" height="14" viewBox="0 0 10 14" fill="#DC2626" style={{ marginRight: "4px" }}>
-                    <path d="M5 0C2.24 0 0 2.24 0 5C0 8.75 5 14 5 14C5 14 10 8.75 10 5C10 2.24 7.76 0 5 0Z" />
-                  </svg>
-                  High
-                </span>
-              </div>
+          {reportsLoading ? (
+            <p className="reports-empty">Loading your reports…</p>
+          ) : reports.length === 0 ? (
+            <p className="reports-empty">
+              You haven&apos;t sent any reports yet.
+            </p>
+          ) : (
+            <ul className="reports-list">
+              {reports.map((r) => (
+                <li key={r.id} className="report-item">
+                  <div className="report-thumb-wrapper">
+                    {signedUrls[r.image_path] ? (
+                      <img
+                        src={signedUrls[r.image_path]}
+                        alt="Report"
+                        className="report-thumb"
+                      />
+                    ) : (
+                      <div className="report-thumb report-thumb-placeholder" />
+                    )}
+                  </div>
 
-              <div className="metric-box">
-                <span className="metric-label">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "4px", verticalAlign: "middle" }}>
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 2a10 10 0 0 0 0 20a10 10 0 0 0 0-20z" />
-                    <path d="M2 12h20" />
-                  </svg>
-                  Location
-                </span>
-                <span className="metric-value">San Jose Farm</span>
-              </div>
-            </div>
+                  <div className="report-info">
+                    <div className="report-top">
+                      <span className={`report-status status-${r.status}`}>
+                        {statusLabel(r.status)}
+                      </span>
+                      <span className="report-date">
+                        {formatDate(r.created_at)}
+                      </span>
+                    </div>
 
-          </div>
-        </div>
+                    {r.note && (
+                      <p className="report-note">{r.note}</p>
+                    )}
 
+                    {r.admin_note && (
+                      <p className="report-admin-note">
+                        <b>Admin:</b> {r.admin_note}
+                      </p>
+                    )}
+                  </div>
+
+                  {r.status === 'pending' && (
+                    <button
+                      type="button"
+                      className="report-delete-btn"
+                      onClick={() => handleDelete(r)}
+                      aria-label="Delete report"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </PageLayout>
   );
 }
+
+export default CropHealth;
