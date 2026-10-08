@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../css/RegisterScreen.css";
 import PageLayout from "../shared/PageLayout";
 import madaLogo from "../assets/images/maya-bird.png";
-import { supabase } from "../supabase/supabase-client";
+import { supabase } from "../supabase/supabase-client.ts";
 
 interface RegisterScreenProps {
   onRegisterSuccess?: () => void;
