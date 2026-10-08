@@ -20,16 +20,9 @@ function LoginScreen({
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // New states for verification
-  const [needsVerification, setNeedsVerification] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resendMessage, setResendMessage] = useState('');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    setResendMessage('');
-    setNeedsVerification(false);
     setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -42,12 +35,7 @@ function LoginScreen({
     if (error) {
       const msg = error.message.toLowerCase();
 
-      if (msg.includes('email not confirmed')) {
-        setNeedsVerification(true);
-        setErrorMessage(
-          "Your email isn't confirmed yet. Click the link in your inbox, or resend it below."
-        );
-      } else if (msg.includes('invalid login credentials')) {
+      if (msg.includes('invalid login credentials')) {
         setErrorMessage('Incorrect email or password.');
       } else {
         setErrorMessage(error.message);
@@ -56,31 +44,6 @@ function LoginScreen({
     }
 
     onLoginSuccess?.();
-  };
-
-  const handleResendVerification = async () => {
-    if (!email.trim()) {
-      setResendMessage('Enter your email above first, then click resend.');
-      return;
-    }
-    setResending(true);
-    setResendMessage('');
-
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/#verify-email`,
-      },
-    });
-
-    setResending(false);
-
-    if (error) {
-      setResendMessage(`Couldn't resend: ${error.message}`);
-      return;
-    }
-    setResendMessage('Verification email sent. Check your inbox (and spam).');
   };
 
   const handleRegisterClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -151,23 +114,6 @@ function LoginScreen({
           {errorMessage && (
             <p className="login-error" role="alert">
               {errorMessage}
-            </p>
-          )}
-
-          {needsVerification && (
-            <button
-              type="button"
-              className="resend-btn"
-              onClick={handleResendVerification}
-              disabled={resending}
-            >
-              {resending ? 'Sending…' : 'Resend verification email'}
-            </button>
-          )}
-
-          {resendMessage && (
-            <p className="login-info" role="status">
-              {resendMessage}
             </p>
           )}
 

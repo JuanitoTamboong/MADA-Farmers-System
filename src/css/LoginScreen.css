@@ -121,7 +121,7 @@
   margin-top: 2px;
 }
 
-/* ERROR / INFO / RESEND */
+/* ERROR */
 .login-error {
   margin: 0;
   padding: 10px 12px;
@@ -132,36 +132,6 @@
   font-size: 12px;
   line-height: 1.45;
   text-align: left;
-}
-
-.login-info {
-  margin: 0;
-  padding: 10px 12px;
-  color: #1b4d2e;
-  background: #e8f5e9;
-  border: 1px solid #a5d6a7;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1.45;
-  text-align: left;
-}
-
-.resend-btn {
-  align-self: center;
-  background: none;
-  border: none;
-  color: #1b4d2e;
-  text-decoration: underline;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 4px 6px;
-  margin-top: -4px;
-}
-
-.resend-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .login-btn {

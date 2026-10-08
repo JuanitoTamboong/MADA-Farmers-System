@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../css/RegisterScreen.css";
 import PageLayout from "../shared/PageLayout";
 import madaLogo from "../assets/images/maya-bird.png";
@@ -21,20 +21,6 @@ function RegisterScreen({
   const [passwordError, setPasswordError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Modal state
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
-
-  // Auto-dismiss the modal and go to login
-  useEffect(() => {
-    if (!showSuccessModal) return;
-    const t = setTimeout(() => {
-      setShowSuccessModal(false);
-      onBackToLogin?.();
-    }, 4000);
-    return () => clearTimeout(t);
-  }, [showSuccessModal, onBackToLogin]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,7 +47,6 @@ function RegisterScreen({
           full_name: name.trim(),
           address: address.trim(),
         },
-        emailRedirectTo: `${window.location.origin}/#verify-email`,
       },
     });
 
@@ -77,20 +62,7 @@ function RegisterScreen({
       return;
     }
 
-    if (!data.session) {
-      // Confirmation is ON → show popup
-      setRegisteredEmail(email.trim());
-      setShowSuccessModal(true);
-      return;
-    }
-
-    // Fallback: confirmation OFF → straight to login
-    onBackToLogin?.();
-  };
-
-  const handleDismissModal = () => {
-    setShowSuccessModal(false);
-    onBackToLogin?.();
+    (onRegisterSuccess ?? onBackToLogin)?.();
   };
 
   return (
@@ -223,39 +195,6 @@ function RegisterScreen({
             </button>
           </p>
         </div>
-
-        {/* ⭐ Popup modal */}
-        {showSuccessModal && (
-          <div
-            className="register-modal-overlay"
-            onClick={handleDismissModal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="register-modal-title"
-          >
-            <div
-              className="register-modal"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="register-modal-icon">✉️</div>
-              <h3 id="register-modal-title" className="register-modal-title">
-                Check your email
-              </h3>
-              <p className="register-modal-text">
-                We sent a verification link to
-                <br />
-                <strong>{registeredEmail}</strong>
-              </p>
-              <p className="register-modal-hint">
-                Click the link in the email to activate your account. If you
-                don't see it, check your spam folder.
-              </p>
-              <p className="register-modal-redirect">
-                Returning to login…
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </PageLayout>
   );
