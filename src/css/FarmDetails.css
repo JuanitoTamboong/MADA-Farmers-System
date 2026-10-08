@@ -10,69 +10,80 @@
   overflow: hidden;
 }
 
-/* BANNER HEADER */
+/* PAGE HEADER AND FARM IMAGE */
 .details-banner-container {
-  position: relative;
   width: 100%;
-  height: 170px;
   flex-shrink: 0;
+  background: #fcf9f0;
+  border-bottom: 1px solid #eee9dc;
 }
 
-.banner-image {
+.banner-top-bar {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 16px;
+}
+
+.details-banner-image {
+  width: 100%;
+  height: 158px;
+  overflow: hidden;
+  background: #e8efe5;
+}
+
+.banner-image,
+.banner-image-placeholder {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .banner-image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #e8efe5;
-}
-
-.banner-top-bar {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background:
+    radial-gradient(ellipse at 75% 120%, rgba(127, 176, 105, 0.32), transparent 48%),
+    linear-gradient(135deg, #edf3e8, #dfeadd);
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  border: none;
+  background: #ffffff;
+  border: 1px solid #e6e9df;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #1b4d2e;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px rgba(27, 77, 46, 0.08);
 }
 
 .banner-title {
   margin: 0;
-  font-size: 17px;
+  text-align: center;
+  font-size: 16px;
   font-weight: 800;
   color: #1b4d2e;
-  background: rgba(255, 255, 255, 0.88);
-  padding: 6px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.banner-action-spacer {
+  width: 40px;
+  height: 40px;
 }
 
 /* DETAILS BODY */
 .details-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 18px 16px 20px 16px;
+  padding: 20px 16px 28px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
   scrollbar-width: none;
 }
 .details-body::-webkit-scrollbar {
@@ -87,9 +98,10 @@
 
 .farm-name {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #0d2818;
+  overflow-wrap: anywhere;
 }
 
 .farm-location {
@@ -149,11 +161,12 @@
 .stats-row {
   background: #ffffff;
   border-radius: 18px;
-  padding: 12px 16px;
+  padding: 16px 12px;
   display: flex;
   align-items: center;
   justify-content: space-around;
   border: 1px solid #f0eae1;
+  box-shadow: 0 4px 14px rgba(27, 77, 46, 0.04);
 }
 
 .stat-col {
@@ -166,6 +179,8 @@
   font-size: 14px;
   font-weight: 800;
   color: #0d2818;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .stat-label {
@@ -204,11 +219,13 @@
 .date-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 10px 12px;
+  min-width: 0;
+  padding: 12px 10px;
   display: flex;
   align-items: center;
   gap: 10px;
   border: 1px solid #f0eae1;
+  box-shadow: 0 4px 14px rgba(27, 77, 46, 0.04);
 }
 
 .date-icon-box {
@@ -235,6 +252,7 @@
   font-size: 11px;
   font-weight: 800;
   color: #111827;
+  overflow-wrap: anywhere;
 }
 
 /* ACTIVITIES LIST */
