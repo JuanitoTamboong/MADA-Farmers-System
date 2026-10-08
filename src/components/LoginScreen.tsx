@@ -2,6 +2,7 @@ import { useState } from 'react';
 import '../css/LoginScreen.css';
 import PageLayout from '../shared/PageLayout';
 import madaLogo from '../assets/images/maya-bird.png';
+import { supabase } from '../supabase/supabase-client';
 
 interface LoginScreenProps {
   onLoginSuccess?: () => void;
@@ -16,12 +17,27 @@ function LoginScreen({
 }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onLoginSuccess) {
-      onLoginSuccess();
+    setErrorMessage('');
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setErrorMessage(error.message);
+      return;
     }
+
+    onLoginSuccess?.();
   };
 
   const handleRegisterClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -30,14 +46,12 @@ function LoginScreen({
       onNavigateToRegister();
       return;
     }
-    // Fallback: hash-based route, matching the rest of the app
     window.location.hash = 'register';
   };
 
   return (
     <PageLayout hideNav={true}>
       <div className="login-content">
-        {/* HEADER / BACK BUTTON */}
         <div className="login-header">
           {onBackToWelcome && (
             <button
@@ -51,14 +65,12 @@ function LoginScreen({
           )}
         </div>
 
-        {/* MADA BRANDING */}
         <div className="login-brand">
           <img src={madaLogo} alt="MADA Logo" className="login-logo" />
           <h1>MADA</h1>
           <p>Smart tools for better farming.</p>
         </div>
 
-        {/* LOGIN FORM */}
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>Welcome Back</h2>
           <p className="form-subtitle">Sign in to manage your farm and crops</p>
@@ -68,6 +80,7 @@ function LoginScreen({
             <input
               id="email"
               type="email"
+              autoComplete="email"
               placeholder="e.g. farmer@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -80,6 +93,7 @@ function LoginScreen({
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -91,12 +105,17 @@ function LoginScreen({
             Forgot Password?
           </a>
 
-          <button type="submit" className="login-btn">
-            Login
+          {errorMessage && (
+            <p className="login-error" role="alert">
+              {errorMessage}
+            </p>
+          )}
+
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
-        {/* FOOTER */}
         <div className="login-footer">
           <p>
             Don&apos;t have an account?{' '}
