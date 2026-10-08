@@ -5,6 +5,7 @@ import PageLayout from '../shared/PageLayout';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
 import AddFarmModal, { type FarmFormPayload } from './AddFarmModal';
+import madaLogo from '../assets/images/maya-bird-delete.png';
 
 interface FarmDetailsProps {
   farmId?: string;
@@ -438,17 +439,11 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
             aria-labelledby="delete-confirm-title"
             aria-describedby="delete-confirm-description"
           >
-            <div className="delete-confirm-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 8v4m0 4h.01M10.3 3.9 1.8 18.2A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+            <img
+              src={madaLogo}
+              alt="MADA"
+              className="delete-confirm-logo"
+            />
             <h2 id="delete-confirm-title">Delete this farm?</h2>
             <p id="delete-confirm-description">
               <strong>{farm.name}</strong> and its farm record will be
