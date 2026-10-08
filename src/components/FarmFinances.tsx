@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PageLayout from '../shared/PageLayout';
 import PageHeader from '../shared/PageHeader';
-import AddExpenseModal, { EXPENSE_CATEGORIES } from '../components/AddExpensesModal';
-import type { ExpensePayload, ExpenseCategory } from '../components/AddExpensesModal';
+import AddExpenseModal from './AddExpensesModal';
+import { EXPENSE_CATEGORIES, type ExpenseCategory, type ExpensePayload } from './expenseTypes';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
 import '../css/FarmFinances.css';
@@ -23,6 +23,18 @@ interface ExpenseRow {
 interface CategoryTotal {
   category: ExpenseCategory;
   total: number;
+}
+
+async function fetchExpenses(farmerId: string): Promise<ExpenseRow[]> {
+  const { data, error } = await supabase
+    .from('farm_expenses')
+    .select('id, category, amount, note, spent_at')
+    .eq('farmer_id', farmerId)
+    .order('spent_at', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as ExpenseRow[];
 }
 
 function formatPeso(n: number): string {
@@ -110,45 +122,52 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
   const [activeTab, setActiveTab] = useState<'Expenses' | 'Income'>('Expenses');
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedProfileId, setLoadedProfileId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
 
-  const loadExpenses = useCallback(async () => {
-    if (!profile) return;
-    setLoading(true);
-    setError(null);
-
-    const { data, error: dbError } = await supabase
-      .from('farm_expenses')
-      .select('id, category, amount, note, spent_at')
-      .eq('farmer_id', profile.id)
-      .order('spent_at', { ascending: false });
-
-    if (dbError) {
-      setError(dbError.message);
-      setExpenses([]);
-      setLoading(false);
-      return;
-    }
-
-    setExpenses(data as ExpenseRow[]);
-    setLoading(false);
-  }, [profile]);
-
   useEffect(() => {
-    loadExpenses();
-  }, [loadExpenses]);
+    if (!profile) return;
+    let cancelled = false;
+
+    const loadExpenses = async () => {
+      try {
+        const rows = await fetchExpenses(profile.id);
+        if (cancelled) return;
+        setExpenses(rows);
+        setError(null);
+      } catch (loadError) {
+        if (cancelled) return;
+        setExpenses([]);
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : 'Unable to load farm expenses.'
+        );
+      } finally {
+        if (!cancelled) {
+          setLoadedProfileId(profile.id);
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadExpenses();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile]);
 
   const handleSaveExpense = async (payload: ExpensePayload) => {
     if (!profile) return;
     if (savingRef.current) return;
 
     const parsedAmount = Number.parseFloat(payload.amount);
-    if (!Number.isFinite(parsedAmount) || parsedAmount < 0) {
-      setError('Please enter a valid amount.');
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setError('Please enter an amount greater than zero.');
       return;
     }
 
@@ -156,26 +175,40 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
     setSaving(true);
     setError(null);
 
-    const { error: dbError } = await supabase
-      .from('farm_expenses')
-      .insert({
-        farmer_id: profile.id,
-        category: payload.category,
-        amount: parsedAmount,
-        note: payload.note?.trim() || null,
-        spent_at: payload.spentAt || new Date().toISOString().slice(0, 10),
-      });
+    let expenseInserted = false;
+    try {
+      const { error: dbError } = await supabase
+        .from('farm_expenses')
+        .insert({
+          farmer_id: profile.id,
+          category: payload.category,
+          amount: parsedAmount,
+          note: payload.note?.trim() || null,
+          spent_at: payload.spentAt || new Date().toISOString().slice(0, 10),
+        });
 
-    savingRef.current = false;
-    setSaving(false);
+      if (dbError) throw new Error(dbError.message);
 
-    if (dbError) {
-      setError(dbError.message);
-      return;
+      expenseInserted = true;
+      setLoading(true);
+      setModalOpen(false);
+      setExpenses(await fetchExpenses(profile.id));
+      setError(null);
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? expenseInserted
+            ? `Expense saved, but the list could not be refreshed: ${saveError.message}`
+            : saveError.message
+          : expenseInserted
+            ? 'Expense saved, but the list could not be refreshed.'
+            : 'Unable to save the expense. Please try again.'
+      );
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+      setLoading(false);
     }
-
-    setModalOpen(false);
-    await loadExpenses();
   };
 
   const totalExpenses = expenses.reduce(
@@ -192,14 +225,17 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
     }))
     .filter((row) => row.total > 0);
 
-  if (profileLoading) {
+  if (
+    profileLoading ||
+    (Boolean(profile) && (loading || loadedProfileId !== profile?.id))
+  ) {
     return (
       <PageLayout
         activeTab="Farm"
         onNavigate={onNavigate}
         hideNav
         loading
-        loadingText="Loading finances..."
+        loadingText="Loading farm finances..."
       >
         {null}
       </PageLayout>
@@ -274,7 +310,7 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
                 </svg>
                 <span>Estimated Revenue</span>
               </div>
-              <h4>—</h4>
+              <h4>Not tracked</h4>
             </div>
 
             <div className="summary-card small-card">
@@ -293,7 +329,7 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
                 </svg>
                 <span>Estimated Profit</span>
               </div>
-              <h4>—</h4>
+              <h4>Not available</h4>
             </div>
           </div>
         </section>
@@ -325,11 +361,7 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
         {/* LIST */}
         <section className="finances-list-card">
           {activeTab === 'Expenses' ? (
-            loading ? (
-              <div className="finance-row">
-                <span className="row-label">Loading expenses…</span>
-              </div>
-            ) : categoryTotals.length === 0 ? (
+            categoryTotals.length === 0 ? (
               <div className="finance-row">
                 <span className="row-label">
                   No expenses yet. Tap <b>Add Expense</b> to record one.
@@ -353,22 +385,25 @@ function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) {
           ) : (
             <div className="finance-row">
               <span className="row-label">
-                Income tracking is not yet available.
+                Income tracking is unavailable because no income records are
+                configured yet.
               </span>
             </div>
           )}
         </section>
 
         {/* ACTION */}
-        <div className="add-expense-container">
-          <button
-            className="add-expense-btn"
-            onClick={() => setModalOpen(true)}
-            disabled={saving}
-          >
-            Add Expense
-          </button>
-        </div>
+        {activeTab === 'Expenses' && (
+          <div className="add-expense-container">
+            <button
+              className="add-expense-btn"
+              onClick={() => setModalOpen(true)}
+              disabled={saving}
+            >
+              Add Expense
+            </button>
+          </div>
+        )}
 
         {modalOpen && (
           <AddExpenseModal

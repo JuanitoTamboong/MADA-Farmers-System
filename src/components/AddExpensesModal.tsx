@@ -1,27 +1,12 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../css/AddFarmModal.css';
-
-export const EXPENSE_CATEGORIES = [
-  'Seeds',
-  'Fertilizer',
-  'Pesticides',
-  'Labor',
-  'Fuel / Equipment',
-  'Transportation',
-  'Other',
-] as const;
-
-export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
-
-export const DEFAULT_EXPENSE_CATEGORY: ExpenseCategory = 'Seeds';
-
-export interface ExpensePayload {
-  category: ExpenseCategory;
-  amount: string;   // raw numeric string from the input
-  note?: string;
-  spentAt?: string; // YYYY-MM-DD
-}
+import {
+  DEFAULT_EXPENSE_CATEGORY,
+  EXPENSE_CATEGORIES,
+  type ExpenseCategory,
+  type ExpensePayload,
+} from './expenseTypes';
 
 interface AddExpenseModalProps {
   saving?: boolean;
@@ -95,7 +80,7 @@ function AddExpenseModal({
             <input
               type="number"
               step="0.01"
-              min="0"
+              min="0.01"
               required
               placeholder="0.00"
               value={form.amount}
