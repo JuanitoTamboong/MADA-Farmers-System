@@ -6,29 +6,25 @@ import madaLogo from "../assets/images/maya-bird.png";
 type Status = "verifying" | "success" | "error";
 
 interface VerifyEmailProps {
-  onVerified?: () => void; // called after success (e.g. go to login/dashboard)
+  onVerified?: () => void;
 }
 
 function VerifyEmail({ onVerified }: VerifyEmailProps) {
   const [status, setStatus] = useState<Status>("verifying");
   const [message, setMessage] = useState("Verifying your email, please wait…");
+  const [closeAttempted, setCloseAttempted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const verify = async () => {
-      // Supabase sends tokens in the URL hash after the user clicks the email link:
-      // https://your-site.com/#access_token=...&refresh_token=...
-      const hash = window.location.hash.startsWith("#")
-        ? window.location.hash.slice(1)
-        : window.location.hash;
+      const hash = window.location.hash.replace(/^#/, "");
       const params = new URLSearchParams(hash);
 
       const errorDescription = params.get("error_description");
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
 
-      // Case 1 — Supabase reported an error in the URL
       if (errorDescription) {
         if (cancelled) return;
         setStatus("error");
@@ -36,7 +32,6 @@ function VerifyEmail({ onVerified }: VerifyEmailProps) {
         return;
       }
 
-      // Case 2 — We have tokens: create the session explicitly
       if (accessToken && refreshToken) {
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -51,24 +46,21 @@ function VerifyEmail({ onVerified }: VerifyEmailProps) {
         }
 
         setStatus("success");
-        setMessage("Your email has been verified! You can now log in.");
+        setMessage("Your email has been verified!");
         onVerified?.();
         return;
       }
 
-      // Case 3 — No tokens in URL: maybe detectSessionInUrl already handled it
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
 
       if (data.session?.user?.email_confirmed_at) {
         setStatus("success");
-        setMessage("Your email has been verified! You can now log in.");
+        setMessage("Your email has been verified!");
         onVerified?.();
       } else {
         setStatus("error");
-        setMessage(
-          "This verification link is invalid or has already been used. Try logging in — if that fails, register again."
-        );
+        setMessage("This verification link is invalid or has already been used.");
       }
     };
 
@@ -78,14 +70,14 @@ function VerifyEmail({ onVerified }: VerifyEmailProps) {
     };
   }, [onVerified]);
 
-  const goToLogin = () => {
-    // Try to close (works if the tab was script-opened)
-    window.close();
-    // Fallback: navigate back to login after a short delay
-    setTimeout(() => {
-      window.location.hash = "login";
-    }, 200);
-  };
+  useEffect(() => {
+    if (status !== "success") return;
+    const t = setTimeout(() => {
+      window.close();
+      setCloseAttempted(true);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [status]);
 
   return (
     <div className="verify-content">
@@ -109,12 +101,22 @@ function VerifyEmail({ onVerified }: VerifyEmailProps) {
             <div className="verify-icon verify-icon-success">✓</div>
             <h2>Email verified!</h2>
             <p>{message}</p>
-            <p className="verify-hint">
-              This tab will close automatically in a moment.
-            </p>
-            <button className="verify-btn" onClick={goToLogin}>
-              Close this tab
-            </button>
+
+            {closeAttempted ? (
+              <>
+                <p className="verify-hint">
+                  You can now close this tab and return to the app.
+                </p>
+                <button
+                  className="verify-btn"
+                  onClick={() => window.close()}
+                >
+                  Close this tab
+                </button>
+              </>
+            ) : (
+              <p className="verify-hint">Closing this tab…</p>
+            )}
           </>
         )}
 
@@ -123,12 +125,6 @@ function VerifyEmail({ onVerified }: VerifyEmailProps) {
             <div className="verify-icon verify-icon-error">!</div>
             <h2>Verification failed</h2>
             <p>{message}</p>
-            <button
-              className="verify-btn"
-              onClick={() => (window.location.hash = "login")}
-            >
-              Go to Login
-            </button>
           </>
         )}
       </div>
