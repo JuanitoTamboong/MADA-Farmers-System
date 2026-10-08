@@ -1,3 +1,5 @@
+/* src/css/FarmFinances.css */
+
 .finances-container {
   padding: 16px;
   max-width: 480px;
@@ -158,25 +160,36 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
-.row-icon {
-  font-size: 1.1rem;
-  width: 24px;
-  display: inline-block;
-  text-align: center;
+/* Icon wrapper used by the component */
+.row-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f0f7ef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .row-label {
   font-size: 0.95rem;
   font-weight: 600;
   color: #111827;
+  flex: 1;
+  min-width: 0;
 }
 
 .row-amount {
   font-size: 0.95rem;
   font-weight: 700;
   color: #111827;
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
 /* Add Expense Button */
@@ -195,4 +208,28 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(27, 77, 46, 0.2);
+  transition: background 0.2s ease;
+}
+
+.add-expense-btn:hover {
+  background-color: #143d24;
+}
+
+.add-expense-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Loading / empty / error states */
+.finances-error {
+  margin: 12px 0;
+  padding: 14px 16px;
+  text-align: center;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
 }
