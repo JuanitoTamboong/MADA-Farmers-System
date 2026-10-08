@@ -72,7 +72,7 @@ function RegisterScreen({
   };
 
   return (
-    <PageLayout hideNav={true}>
+    <PageLayout hideNav={true} loading={loading} loadingText="Creating your account...">
       <div className="register-content">
         <div className="register-header">
           <button

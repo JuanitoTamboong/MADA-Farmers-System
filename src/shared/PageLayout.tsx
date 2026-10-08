@@ -1,5 +1,7 @@
 import React from "react";
 import BottomNav from "../navigation/BottomNav";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import madaLogo from "../assets/images/maya-bird.png";
 import "./Layout.css";
 
 interface PageLayoutProps {
@@ -8,6 +10,8 @@ interface PageLayoutProps {
   activeTab?: string;
   onNavigate?: (tab: string) => void;
   hideNav?: boolean;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 const PageLayout: React.FC<PageLayoutProps> = ({
@@ -16,6 +20,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   activeTab = "Home",
   onNavigate,
   hideNav = false,
+  loading = false,
+  loadingText = "Loading...",
 }) => {
   return (
     <main className="app-viewport">
@@ -32,6 +38,15 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         </div>
 
         {!hideNav && <BottomNav activeTab={activeTab} onNavigate={onNavigate} />}
+
+        {loading && (
+          <LoadingSpinner
+            variant="leaf"
+            logo={madaLogo}
+            title="MADA"
+            text={loadingText}
+          />
+        )}
       </div>
     </main>
   );

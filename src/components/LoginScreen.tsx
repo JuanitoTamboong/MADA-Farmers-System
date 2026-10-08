@@ -78,7 +78,7 @@ function LoginScreen({
   };
 
   return (
-    <PageLayout hideNav={true}>
+    <PageLayout hideNav={true} loading={loading} loadingText="Signing in...">
       <div className="login-content">
         <div className="login-header">
           {onBackToWelcome && (
