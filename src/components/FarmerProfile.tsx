@@ -1,4 +1,5 @@
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import farmerAvatar from "../assets/images/mada-dashboard.png";
 import "../css/FarmerProfile.css";
 
@@ -12,19 +13,10 @@ function FarmerProfile({ onLogout, onNavigate }: FarmerProfileProps) {
     <PageLayout activeTab="Profile" onNavigate={onNavigate}>
       <div className="profile-content">
 
-        {/* TOP BAR / BACK BUTTON */}
-        <div className="profile-top-bar">
-          <button
-            className="back-btn"
-            onClick={() => onNavigate?.("dashboard")}
-            aria-label="Go Back"
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h2 className="profile-title">Profile</h2>
-        </div>
+        <PageHeader
+          title="Profile"
+          align="left"
+        />
 
         {/* MAIN PROFILE CARD */}
         <div className="profile-card">

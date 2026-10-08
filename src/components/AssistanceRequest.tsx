@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import "../css/AssistanceRequest.css";
 
 interface AssistanceRequestProps {
@@ -123,32 +124,10 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
       <div className="assistance-container">
         
-        {/* Header Bar */}
-        <header className="assistance-header">
-          <button
-            className="back-btn-round"
-            onClick={() => onNavigate?.("Home")}
-            aria-label="Go Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="#1c3a27"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-
-          <h1 className="assistance-title">Assistance Request</h1>
-
-          {/* Empty spacer to keep the title centered */}
-          <div className="header-spacer" />
-        </header>
+        <PageHeader
+          title="Assistance Request"
+          onBack={() => onNavigate?.("Home")}
+        />
 
         {/* Big Main Action Button */}
         <button

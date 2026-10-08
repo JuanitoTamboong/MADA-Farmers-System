@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import '../css/MyFarms.css';
 import PageLayout from '../shared/PageLayout';
+import PageHeader from '../shared/PageHeader';
 import AddFarmModal, { type FarmFormPayload } from './AddFarmModal';
 import farmThumbnail from '../assets/images/farm.jfif';
 import { supabase } from '../supabase/supabase-client';
@@ -245,16 +246,19 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
     <PageLayout activeTab="Farm" onNavigate={onNavigate}>
       <div className="farms-content">
         {/* HEADER */}
-        <header className="farms-header">
-          <h1 className="page-title">My Farms</h1>
-          <button
-            className="add-farm-btn"
-            onClick={handleAddClick}
-            disabled={saving}
-          >
-            <span className="plus-icon">+</span> Add Farm
-          </button>
-        </header>
+        <PageHeader
+          title="My Farms"
+          align="left"
+          action={
+            <button
+              className="add-farm-btn"
+              onClick={handleAddClick}
+              disabled={saving}
+            >
+              <span className="plus-icon">+</span> Add Farm
+            </button>
+          }
+        />
 
         {farmsError && (
           <p className="farms-error" role="alert">

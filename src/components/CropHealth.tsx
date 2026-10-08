@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import cropBanner from "../assets/images/farm2.jpg";
 import "../css/CropHealth.css";
 
@@ -21,28 +22,10 @@ export default function CropHealth({ onNavigate }: CropHealthProps) {
     <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
       <div className="crop-health-container">
 
-        {/* TOP NAVIGATION BAR */}
-        <header className="crop-health-header">
-          <button
-            className="back-btn"
-            onClick={() => onNavigate?.("Home")}
-            aria-label="Go Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              fill="none"
-              stroke="#1B4D2E"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h2>Pest & Disease Report</h2>
-        </header>
+        <PageHeader
+          title="Pest & Disease Report"
+          onBack={() => onNavigate?.("Home")}
+        />
 
         {/* IMAGE PREVIEW HERO */}
         <div className="crop-banner-wrapper">

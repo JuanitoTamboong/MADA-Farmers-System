@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import "../css/MarketPrices.css";
 
 interface MarketPricesProps {
@@ -94,28 +95,10 @@ function MarketPrices({ onNavigate }: MarketPricesProps) {
     <PageLayout activeTab="Market" onNavigate={onNavigate} hideNav>
       <div className="market-prices-container">
 
-        {/* Top Header */}
-        <header className="market-header">
-          <button
-            className="back-btn"
-            onClick={() => onNavigate?.("Home")}
-            aria-label="Go Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              fill="none"
-              stroke="#1B4D2E"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1 className="market-title">Market Prices</h1>
-        </header>
+        <PageHeader
+          title="Market Prices"
+          onBack={() => onNavigate?.("Home")}
+        />
 
         {/* Tab Selector */}
         <div className="market-tabs">

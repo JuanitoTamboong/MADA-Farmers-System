@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import "../css/FarmFinances.css";
 
 interface FarmFinancesProps {
@@ -100,28 +101,10 @@ export default function FarmFinances({ onBack, onNavigate }: FarmFinancesProps) 
     <PageLayout activeTab="Farm" onNavigate={onNavigate} hideNav>
       <div className="finances-container">
 
-        {/* TOP HEADER */}
-        <header className="finances-header">
-          <button
-            className="finances-back-btn"
-            onClick={onBack || (() => onNavigate?.("Home"))}
-            aria-label="Go Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              fill="none"
-              stroke="#1B4D2E"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h2 className="finances-title">Farm Finances</h2>
-        </header>
+        <PageHeader
+          title="Farm Finances"
+          onBack={onBack || (() => onNavigate?.("Home"))}
+        />
 
         {/* SUMMARY CARDS */}
         <section className="finances-summary">

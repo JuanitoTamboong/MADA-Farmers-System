@@ -1,13 +1,13 @@
 import { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import "../css/FarmingCalendar.css";
 
 interface FarmingCalendarProps {
-  onBack?: () => void;
   onNavigate?: (screen: string) => void;
 }
 
-export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarProps) {
+export default function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
   const [selectedDay, setSelectedDay] = useState(8);
 
   const days = [
@@ -24,15 +24,7 @@ export default function FarmingCalendar({ onBack, onNavigate }: FarmingCalendarP
     <PageLayout activeTab="Tasks" onNavigate={onNavigate}>
       <div className="calendar-screen">
 
-        {/* HEADER */}
-        <header className="calendar-header">
-          <button type="button" className="calendar-back-btn" onClick={onBack}>
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1>Farming Calendar</h1>
-        </header>
+        <PageHeader title="Farming Calendar" align="left" />
 
         {/* MONTH SELECTOR */}
         <div className="month-selector">

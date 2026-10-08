@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageLayout from "../shared/PageLayout";
+import PageHeader from "../shared/PageHeader";
 import "../css/Announcements.css";
 
 interface AnnouncementsProps {
@@ -103,28 +104,10 @@ function Announcements({ onNavigate }: AnnouncementsProps) {
     <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
       <div className="announcements-container">
 
-        {/* Top Header */}
-        <header className="announcements-header">
-          <button
-            className="back-btn"
-            onClick={() => onNavigate?.("Home")}
-            aria-label="Go Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              fill="none"
-              stroke="#1B4D2E"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1 className="announcements-title">Announcements</h1>
-        </header>
+        <PageHeader
+          title="Announcements"
+          onBack={() => onNavigate?.("Home")}
+        />
 
         {/* Categories Horizontal Scroll */}
         <div className="category-scroll-wrapper">

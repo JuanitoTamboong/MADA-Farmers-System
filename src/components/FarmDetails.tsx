@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../css/FarmDetails.css';
 import PageLayout from '../shared/PageLayout';
+import PageHeader from '../shared/PageHeader';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
 import AddFarmModal, { type FarmFormPayload } from './AddFarmModal';
@@ -231,26 +232,7 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
       <PageLayout activeTab="Farm" onNavigate={onNavigate}>
         <div className="details-content">
           <div className="details-banner-container">
-            <div className="banner-top-bar">
-              <button
-                className="icon-btn back-btn"
-                onClick={onBack}
-                aria-label="Go Back"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <h1 className="banner-title">Farm Details</h1>
-              <span className="banner-action-spacer" aria-hidden="true" />
-            </div>
+            <PageHeader title="Farm Details" onBack={onBack} divider={false} />
             <div className="details-banner-image">
               <div className="banner-image-placeholder" aria-hidden="true" />
             </div>
@@ -271,26 +253,7 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
       <div className="details-content">
         {/* BANNER */}
         <div className="details-banner-container">
-          <div className="banner-top-bar">
-            <button
-              className="icon-btn back-btn"
-              onClick={onBack}
-              aria-label="Go Back"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <h1 className="banner-title">Farm Details</h1>
-            <span className="banner-action-spacer" aria-hidden="true" />
-          </div>
+          <PageHeader title="Farm Details" onBack={onBack} divider={false} />
           <div className="details-banner-image">
             {farm.image_url ? (
               <img src={farm.image_url} alt={`${farm.name} farm`} className="banner-image" />
