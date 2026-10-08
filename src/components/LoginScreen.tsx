@@ -27,16 +27,15 @@ function LoginScreen({
     setErrorMessage('');
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    // 1) Authenticate against Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       const msg = error.message.toLowerCase();
-
       if (msg.includes('invalid login credentials')) {
         setErrorMessage('Incorrect email or password.');
       } else {
@@ -45,6 +44,27 @@ function LoginScreen({
       return;
     }
 
+    const user = data.user;
+
+    // 2) Farmer-only gate — verify a farmers row exists for this user
+    const { data: farmer, error: farmerError } = await supabase
+      .from('farmers')
+      .select('id, role')
+      .eq('id', user.id)
+      .eq('role', 'farmer')
+      .maybeSingle();
+
+    if (farmerError || !farmer) {
+      // Not a farmer — immediately invalidate the session
+      await supabase.auth.signOut();
+      setLoading(false);
+      setErrorMessage(
+        'This account is not registered as a farmer. Please contact support.'
+      );
+      return;
+    }
+
+    setLoading(false);
     onLoginSuccess?.();
   };
 

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import "../css/RegisterScreen.css";
-import PageLayout from "../shared/PageLayout";
-import madaLogo from "../assets/images/maya-bird.png";
-import { supabase } from "../supabase/supabase-client";
-import { Eye, EyeOff } from "lucide-react";
+import { useState } from 'react';
+import '../css/RegisterScreen.css';
+import PageLayout from '../shared/PageLayout';
+import madaLogo from '../assets/images/maya-bird.png';
+import { supabase } from '../supabase/supabase-client';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface RegisterScreenProps {
   onRegisterSuccess?: () => void;
@@ -14,29 +14,29 @@ function RegisterScreen({
   onRegisterSuccess,
   onBackToLogin,
 }: RegisterScreenProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setPasswordError("");
-    setErrorMessage("");
+    setPasswordError('');
+    setErrorMessage('');
 
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
+      setPasswordError('Passwords do not match.');
       return;
     }
 
     if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
+      setPasswordError('Password must be at least 6 characters.');
       return;
     }
 
@@ -60,11 +60,14 @@ function RegisterScreen({
       return;
     }
 
+    // Supabase returns identities=[] if the email is already registered
     if (data.user && data.user.identities?.length === 0) {
-      setErrorMessage("An account with this email already exists.");
+      setErrorMessage('An account with this email already exists.');
       return;
     }
 
+    // If email confirmation is enabled, data.session will be null.
+    // We still treat this as success — user just needs to verify email.
     (onRegisterSuccess ?? onBackToLogin)?.();
   };
 
@@ -138,7 +141,7 @@ function RegisterScreen({
             <div className="register-password-field">
               <input
                 id="register-password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Create a password"
                 value={password}
@@ -150,7 +153,7 @@ function RegisterScreen({
                 type="button"
                 className="register-password-toggle"
                 onClick={() => setShowPassword((shown) => !shown)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 aria-pressed={showPassword}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -165,14 +168,14 @@ function RegisterScreen({
             <div className="register-password-field">
               <input
                 id="register-confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 required
                 aria-describedby={
-                  passwordError ? "register-password-error" : undefined
+                  passwordError ? 'register-password-error' : undefined
                 }
               />
               <button
@@ -181,8 +184,8 @@ function RegisterScreen({
                 onClick={() => setShowConfirmPassword((shown) => !shown)}
                 aria-label={
                   showConfirmPassword
-                    ? "Hide confirm password"
-                    : "Show confirm password"
+                    ? 'Hide confirm password'
+                    : 'Show confirm password'
                 }
                 aria-pressed={showConfirmPassword}
               >
@@ -216,13 +219,13 @@ function RegisterScreen({
             className="register-submit-btn"
             disabled={loading}
           >
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
         <div className="register-footer">
           <p>
-            Already have an account?{" "}
+            Already have an account?{' '}
             <button type="button" onClick={onBackToLogin}>
               Login
             </button>
