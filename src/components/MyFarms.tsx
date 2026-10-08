@@ -228,6 +228,19 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
     );
   }
 
+  if (farmsLoading) {
+    return (
+      <PageLayout
+        activeTab="Farm"
+        onNavigate={onNavigate}
+        loading
+        loadingText="Loading your farms..."
+      >
+        {null}
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout activeTab="Farm" onNavigate={onNavigate}>
       <div className="farms-content">
@@ -251,9 +264,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
 
         {/* FARMS LIST */}
         <div className="farms-list">
-          {farmsLoading ? (
-            <p className="farms-empty">Loading farms…</p>
-          ) : farms.length === 0 ? (
+          {farms.length === 0 ? (
             <p className="farms-empty">
               You haven&apos;t added any farms yet. Tap <b>Add Farm</b> to
               create your first one.
