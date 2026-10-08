@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WelcomeScreen from "./components/WelcomeScreen";
 import LoginScreen from "./components/LoginScreen";
 import RegisterScreen from "./components/RegisterScreen";
@@ -11,13 +11,15 @@ import CropHealth from "./components/CropHealth";
 import FarmFinances from "./components/FarmFinances";
 import MarketPrices from "./components/MarketPrices";
 import Announcements from "./components/Announcements";
-import AssistanceRequest from "./components/AssistanceRequest";     // ← ADD
+import AssistanceRequest from "./components/AssistanceRequest";
+import VerifyEmail from "./templates/VerifyEmail";                 // ← ADD
 import { LoadingProvider } from "./context/LoadingContext";
 
 type Screen =
   | "welcome"
   | "login"
   | "register"
+  | "verify-email"                                                 // ← ADD
   | "dashboard"
   | "farms"
   | "farm-details"
@@ -27,11 +29,25 @@ type Screen =
   | "finances"
   | "market"
   | "announcements"
-  | "assistance";                                                  // ← ADD
+  | "assistance";
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("welcome");
+  // Start on verify-email if Supabase redirected here with tokens
+  const [screen, setScreen] = useState<Screen>(() =>
+    window.location.hash.includes("access_token") ? "verify-email" : "welcome"
+  );
   const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
+
+  // Also handle the case where the user clicks the email link while the tab is already open
+  useEffect(() => {
+    const onHashChange = () => {
+      if (window.location.hash.includes("access_token")) {
+        setScreen("verify-email");
+      }
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const handleNavigate = (tab: string) => {
     switch (tab) {
@@ -70,7 +86,7 @@ function App() {
       case "announcements":
         setScreen("announcements");
         break;
-      case "Assistance":                                           // ← ADD
+      case "Assistance":
       case "assistance":
       case "assistance-request":
         setScreen("assistance");
@@ -101,8 +117,25 @@ function App() {
       {screen === "register" && (
         <div key="register" className="page-transition">
           <RegisterScreen
-            onRegisterSuccess={() => setScreen("dashboard")}
+            onRegisterSuccess={() => setScreen("login")}
             onBackToLogin={() => setScreen("login")}
+          />
+        </div>
+      )}
+
+      {/* ↓ ADD — email verification screen */}
+      {screen === "verify-email" && (
+        <div key="verify-email" className="page-transition">
+          <VerifyEmail
+            onVerified={() => {
+              // Clear the tokens from the URL, then send them to login
+              window.history.replaceState(
+                null,
+                "",
+                window.location.pathname
+              );
+              setScreen("login");
+            }}
           />
         </div>
       )}
@@ -183,7 +216,6 @@ function App() {
         </div>
       )}
 
-      {/* ↓ ADD — render Assistance Request */}
       {screen === "assistance" && (
         <div key="assistance" className="page-transition">
           <AssistanceRequest onNavigate={handleNavigate} />

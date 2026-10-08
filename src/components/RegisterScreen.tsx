@@ -49,7 +49,8 @@ function RegisterScreen({
           full_name: name.trim(),
           address: address.trim(),
         },
-        emailRedirectTo: `${window.location.origin}/#login`,
+        // ⭐ Send the confirmation link back to the VerifyEmail screen
+        emailRedirectTo: `${window.location.origin}/#verify-email`,
       },
     });
 
@@ -70,7 +71,7 @@ function RegisterScreen({
     // Confirmation is ON → no session yet. Tell user to check their email.
     if (!data.session) {
       setSuccessMessage(
-        `We sent a verification link to ${email.trim()}. Please check your inbox (and spam folder) and click the link before logging in.`
+        `We sent a verification link to ${email.trim()}. Please check your inbox (and spam folder) and click the link to activate your account.`
       );
       return;
     }

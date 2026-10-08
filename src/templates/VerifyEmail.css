@@ -1,0 +1,135 @@
+.verify-content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px;
+  background-color: #fcf9f0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif;
+}
+
+/* Brand block — matches RegisterScreen / LoginScreen styling */
+.verify-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.verify-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.verify-brand h1 {
+  margin: 0;
+  color: #1b4d2e;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.verify-brand p {
+  margin: 2px 0 0;
+  color: #5c6e58;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Card */
+.verify-card {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(27, 77, 46, 0.08);
+  border: 1px solid #e8efe9;
+  box-sizing: border-box;
+}
+
+.verify-card h2 {
+  margin: 16px 0 8px;
+  color: #0d2818;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.verify-card p {
+  margin: 0 0 8px;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.verify-hint {
+  color: #9ca3af !important;
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+/* Spinner */
+.verify-spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border: 4px solid #e5efe6;
+  border-top-color: #1b4d2e;
+  border-radius: 50%;
+  animation: verify-spin 0.9s linear infinite;
+}
+
+@keyframes verify-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Status icons */
+.verify-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.verify-icon-success {
+  background: #1b4d2e;
+}
+
+.verify-icon-error {
+  background: #b42318;
+}
+
+/* Button — matches .register-submit-btn */
+.verify-btn {
+  margin-top: 20px;
+  width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  border: none;
+  background: #1b4d2e;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(27, 77, 46, 0.2);
+  transition: background 0.2s ease;
+}
+
+.verify-btn:hover {
+  background: #143d24;
+}
