@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../css/FarmDetails.css';
 import PageLayout from '../shared/PageLayout';
-import farmThumbnail from '../assets/images/farm.jfif';
 import { supabase } from '../supabase/supabase-client';
+import { useFarmerProfile } from '../hooks/useFarmerProfile';
 
 interface FarmDetailsProps {
   farmId?: string;
@@ -41,139 +41,67 @@ function formatDate(iso: string | null | undefined): string {
   });
 }
 
-function startOfToday(): number {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-function dayDiff(iso: string | null): number | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  d.setHours(0, 0, 0, 0);
-  return Math.round((d.getTime() - startOfToday()) / 86_400_000);
-}
-
-type ActivityState = 'completed' | 'in-progress' | 'pending';
-
-interface ActivityItem {
-  key: string;
-  title: string;
-  state: ActivityState;
-}
-
-function buildActivities(farm: FarmRow): ActivityItem[] {
-  const plantedDiff = dayDiff(farm.planted_date);
-  const harvestDiff = dayDiff(farm.expected_harvest);
-  const harvested = farm.status === 'Harvested';
-
-  const landPrep: ActivityState =
-    plantedDiff === null ? 'pending' : 'completed';
-
-  const planting: ActivityState =
-    plantedDiff === null
-      ? 'pending'
-      : plantedDiff <= 0
-        ? 'completed'
-        : 'in-progress';
-
-  const fertilizer: ActivityState = harvested
-    ? 'completed'
-    : plantedDiff !== null &&
-        plantedDiff <= 0 &&
-        (harvestDiff === null || harvestDiff > 0)
-      ? 'in-progress'
-      : 'pending';
-
-  return [
-    { key: 'land-prep', title: 'Land Preparation', state: landPrep },
-    { key: 'planting', title: 'Planting', state: planting },
-    { key: 'fertilizer', title: 'Fertilizer Application', state: fertilizer },
-  ];
-}
-
-function ActivityCard({ item }: { item: ActivityItem }) {
-  if (item.state === 'completed') {
-    return (
-      <div className="activity-card completed">
-        <div className="status-icon green-check">✓</div>
-        <div className="activity-info">
-          <h4>{item.title}</h4>
-          <p className="status-text text-green">Completed</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (item.state === 'in-progress') {
-    return (
-      <div className="activity-card in-progress">
-        <div className="status-icon orange-sprout">🌱</div>
-        <div className="activity-info">
-          <h4>{item.title}</h4>
-          <p className="status-text text-orange">In Progress</p>
-        </div>
-        <div className="activity-arrow">→</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="activity-card pending">
-      <div className="status-icon">•</div>
-      <div className="activity-info">
-        <h4>{item.title}</h4>
-        <p className="status-text">Pending</p>
-      </div>
-    </div>
-  );
-}
-
 function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
-  const [farm, setFarm] = useState<FarmRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadFarm = useCallback(async () => {
-    if (!farmId) {
-      setLoading(false);
-      setError('No farm selected.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const { data, error: dbError } = await supabase
-      .from('farms')
-      .select(
-        'id, name, location, area_hectares, crop, variety, status, planted_date, expected_harvest, image_url'
-      )
-      .eq('id', farmId)
-      .maybeSingle();
-
-    if (dbError) {
-      setError(dbError.message);
-      setFarm(null);
-      setLoading(false);
-      return;
-    }
-
-    if (!data) {
-      setError('Farm not found.');
-      setFarm(null);
-      setLoading(false);
-      return;
-    }
-
-    setFarm(data as FarmRow);
-    setLoading(false);
-  }, [farmId]);
+  const { profile, loading: profileLoading, error: profileError } =
+    useFarmerProfile();
+  const [farmResult, setFarmResult] = useState<{
+    farmId: string;
+    farm: FarmRow | null;
+    error: string | null;
+  } | null>(null);
 
   useEffect(() => {
-    loadFarm();
-  }, [loadFarm]);
+    if (!profile || !farmId) return;
+
+    let cancelled = false;
+
+    const loadFarm = async () => {
+      const { data, error: dbError } = await supabase
+        .from('farms')
+        .select(
+          'id, name, location, area_hectares, crop, variety, status, planted_date, expected_harvest, image_url'
+        )
+        .eq('id', farmId)
+        .eq('farmer_id', profile.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (dbError) {
+        setFarmResult({ farmId, farm: null, error: dbError.message });
+        return;
+      }
+
+      if (!data) {
+        setFarmResult({ farmId, farm: null, error: 'Farm not found.' });
+        return;
+      }
+
+      setFarmResult({ farmId, farm: data as FarmRow, error: null });
+    };
+
+    void loadFarm();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [farmId, profile]);
+
+  const farm = farmResult?.farmId === farmId ? farmResult?.farm ?? null : null;
+  const error =
+    profileError ??
+    (profileLoading
+      ? null
+      : !profile
+        ? 'Unable to load your profile.'
+        : !farmId
+          ? 'No farm selected.'
+          : farmResult?.farmId === farmId
+            ? farmResult.error
+            : null);
+  const loading =
+    profileLoading ||
+    (Boolean(profile && farmId) && farmResult?.farmId !== farmId);
 
   if (loading) {
     return (
@@ -193,11 +121,7 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
       <PageLayout activeTab="Farm" onNavigate={onNavigate}>
         <div className="details-content">
           <div className="details-banner-container">
-            <img
-              src={farmThumbnail}
-              alt="Farm"
-              className="banner-image"
-            />
+            <div className="banner-image-placeholder" aria-hidden="true" />
             <div className="banner-top-bar">
               <button
                 className="icon-btn back-btn"
@@ -229,18 +153,16 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
     );
   }
 
-  const activities = buildActivities(farm);
-
   return (
     <PageLayout activeTab="Farm" onNavigate={onNavigate}>
       <div className="details-content">
         {/* BANNER */}
         <div className="details-banner-container">
-          <img
-            src={farm.image_url || farmThumbnail}
-            alt={farm.name}
-            className="banner-image"
-          />
+          {farm.image_url ? (
+            <img src={farm.image_url} alt={farm.name} className="banner-image" />
+          ) : (
+            <div className="banner-image-placeholder" aria-hidden="true" />
+          )}
           <div className="banner-top-bar">
             <button
               className="icon-btn back-btn"
@@ -259,16 +181,7 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
               </svg>
             </button>
             <h1 className="banner-title">Farm Details</h1>
-            <button className="icon-btn option-btn" aria-label="Options">
-              <svg
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="currentColor"
-              >
-                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-              </svg>
-            </button>
+            <span />
           </div>
         </div>
 
@@ -290,7 +203,6 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
                 </p>
               )}
             </div>
-            <button className="edit-btn">Edit</button>
           </div>
 
           {/* STATS */}
@@ -338,13 +250,12 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
             </div>
           </div>
 
-          {/* ACTIVITIES — derived from real dates */}
+          {/* FARM STATUS */}
           <div className="section-container">
-            <h3 className="section-title">Farming Activities</h3>
-            <div className="activities-list">
-              {activities.map((a) => (
-                <ActivityCard key={a.key} item={a} />
-              ))}
+            <h3 className="section-title">Farm Status</h3>
+            <div className="farm-status-card">
+              <span className="farm-status-label">Current status</span>
+              <span className="farm-status-value">{farm.status}</span>
             </div>
           </div>
         </div>

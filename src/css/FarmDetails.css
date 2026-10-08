@@ -24,6 +24,12 @@
   object-fit: cover;
 }
 
+.banner-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e8efe5;
+}
+
 .banner-top-bar {
   position: absolute;
   top: 16px;
@@ -210,6 +216,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.farm-status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #f0eae1;
+  border-radius: 16px;
+}
+
+.farm-status-label {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.farm-status-value {
+  color: #166534;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .activity-card {

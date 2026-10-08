@@ -154,6 +154,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
       location: payload.location?.trim() || null,
       area_hectares: parsedArea,
       crop: payload.crop?.trim() || null,
+      variety: payload.variety?.trim() || null,
       status: payload.status ?? 'Growing',
       planted_date: payload.plantedDate || null,
       expected_harvest: payload.expectedHarvest || null,
