@@ -49,7 +49,6 @@ function RegisterScreen({
           full_name: name.trim(),
           address: address.trim(),
         },
-        // Where the confirmation link in the email sends the user
         emailRedirectTo: `${window.location.origin}/#login`,
       },
     });
@@ -62,13 +61,13 @@ function RegisterScreen({
     }
 
     // Supabase hides "email already exists" by returning a user with
-    // empty identities when confirmation is ON. Guard against silent success.
+    // empty identities when confirmation is ON.
     if (data.user && data.user.identities?.length === 0) {
       setErrorMessage("An account with this email already exists.");
       return;
     }
 
-    // Confirmation is ON → no session yet. Tell the user to check their email.
+    // Confirmation is ON → no session yet. Tell user to check their email.
     if (!data.session) {
       setSuccessMessage(
         `We sent a verification link to ${email.trim()}. Please check your inbox (and spam folder) and click the link before logging in.`
@@ -76,8 +75,12 @@ function RegisterScreen({
       return;
     }
 
-    // Fallback: confirmation was somehow OFF → just go to login.
-    onBackToLogin?.();
+    // Fallback: confirmation was somehow OFF → go to login / success handler.
+    if (onBackToLogin) {
+      onBackToLogin();
+    } else {
+      onRegisterSuccess?.();
+    }
   };
 
   return (
