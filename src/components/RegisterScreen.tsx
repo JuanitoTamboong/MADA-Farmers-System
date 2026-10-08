@@ -14,17 +14,22 @@ function RegisterScreen({
 }: RegisterScreenProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match.");
       return;
     }
+
     setPasswordError("");
+
+    // TODO: send { name, email, address, password } to your API here
     onRegisterSuccess?.();
   };
 
@@ -50,7 +55,9 @@ function RegisterScreen({
 
         <form className="register-form" onSubmit={handleSubmit}>
           <h2>Create Account</h2>
-          <p className="register-subtitle">Register to manage your farm and crops</p>
+          <p className="register-subtitle">
+            Register to manage your farm and crops
+          </p>
 
           <div className="register-input-group">
             <label htmlFor="register-name">Full Name</label>
@@ -78,6 +85,20 @@ function RegisterScreen({
             />
           </div>
 
+          {/* New Barangay / Address field */}
+          <div className="register-input-group">
+            <label htmlFor="register-address">Barangay / Address</label>
+            <input
+              id="register-address"
+              type="text"
+              autoComplete="street-address"
+              placeholder="e.g. Barangay San Isidro, Nueva Ecija"
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+              required
+            />
+          </div>
+
           <div className="register-input-group">
             <label htmlFor="register-password">Password</label>
             <input
@@ -101,12 +122,18 @@ function RegisterScreen({
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               required
-              aria-describedby={passwordError ? "register-password-error" : undefined}
+              aria-describedby={
+                passwordError ? "register-password-error" : undefined
+              }
             />
           </div>
 
           {passwordError && (
-            <p id="register-password-error" className="register-error" role="alert">
+            <p
+              id="register-password-error"
+              className="register-error"
+              role="alert"
+            >
               {passwordError}
             </p>
           )}
