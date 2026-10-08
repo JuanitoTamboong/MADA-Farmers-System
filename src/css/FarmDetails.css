@@ -119,6 +119,32 @@
   cursor: pointer;
 }
 
+.farm-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.farm-action-buttons button {
+  flex: 1;
+  min-height: 38px;
+}
+
+.farm-action-buttons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.delete-farm-btn {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* STATS ROW */
 .stats-row {
   background: #ffffff;
@@ -318,4 +344,110 @@
   border-radius: 16px;
   font-size: 14px;
   line-height: 1.55;
+}
+
+.delete-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 18, 0.56);
+  backdrop-filter: blur(4px);
+}
+
+.delete-confirm-dialog {
+  width: min(100%, 350px);
+  padding: 28px 24px 22px;
+  border: 1px solid #f2e8e2;
+  border-radius: 24px;
+  background: #fffefa;
+  box-shadow: 0 24px 70px rgba(15, 23, 18, 0.28);
+  text-align: center;
+  animation: fadeUp 0.2s ease both;
+}
+
+.delete-confirm-icon {
+  display: flex;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: #fff1f0;
+  color: #c62828;
+}
+
+.delete-confirm-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.delete-confirm-dialog h2 {
+  margin: 0;
+  color: #18251b;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.delete-confirm-dialog > p {
+  margin: 10px 0 0;
+  color: #667066;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.delete-confirm-dialog > p strong {
+  color: #344536;
+}
+
+.delete-confirm-dialog .delete-confirm-error {
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+  text-align: left;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.delete-confirm-actions button {
+  min-height: 44px;
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.delete-confirm-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.delete-cancel-btn {
+  border: 1px solid #dce3da;
+  background: #ffffff;
+  color: #344536;
+}
+
+.delete-confirm-btn {
+  border: 1px solid #b91c1c;
+  background: #c62828;
+  color: #ffffff;
+}
+
+.delete-confirm-btn:hover:not(:disabled) {
+  background: #a91f1f;
 }

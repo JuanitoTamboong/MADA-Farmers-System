@@ -143,39 +143,63 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
       return;
     }
 
+    const variety = payload.variety?.trim();
+    if (!variety) {
+      setFarmsError('Please enter the crop variety.');
+      return;
+    }
+
     savingRef.current = true;
     setSaving(true);
     setFarmsError(null);
 
-    const { error } = await supabase.from('farms').insert({
-      id: submissionIdRef.current,
-      farmer_id: profile.id,
-      name: payload.name.trim(),
-      location: payload.location?.trim() || null,
-      area_hectares: parsedArea,
-      crop: payload.crop?.trim() || null,
-      variety: payload.variety?.trim() || null,
-      status: payload.status ?? 'Growing',
-      planted_date: payload.plantedDate || null,
-      expected_harvest: payload.expectedHarvest || null,
-      image_url: payload.image || null,
-    });
+    try {
+      const { data, error } = await supabase
+        .from('farms')
+        .insert({
+          id: submissionIdRef.current,
+          farmer_id: profile.id,
+          name: payload.name.trim(),
+          location: payload.location?.trim() || null,
+          area_hectares: parsedArea,
+          crop: payload.crop?.trim() || null,
+          variety,
+          status: payload.status ?? 'Growing',
+          planted_date: payload.plantedDate || null,
+          expected_harvest: payload.expectedHarvest || null,
+          image_url: payload.image || null,
+        })
+        .select('id, variety')
+        .single();
 
-    savingRef.current = false;
-    setSaving(false);
-
-    if (error) {
-      const msg = error.message.toLowerCase();
-      if (error.code === '23505' || msg.includes('duplicate key')) {
-        setFarmsError('You already have a farm with that name.');
-      } else {
-        setFarmsError(error.message);
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (error.code === '23505' || msg.includes('duplicate key')) {
+          setFarmsError('You already have a farm with that name.');
+        } else {
+          setFarmsError(error.message);
+        }
+        return;
       }
-      return;
-    }
 
-    setIsModalOpen(false);
-    await loadFarms();
+      setIsModalOpen(false);
+      await loadFarms();
+
+      if (data.variety?.trim() !== variety) {
+        setFarmsError(
+          'Farm saved, but the variety was not saved by the database. Check that the farms.variety column exists and is writable.'
+        );
+      }
+    } catch (saveError) {
+      setFarmsError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'Unable to save the farm. Please try again.'
+      );
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   // ---- Render gates ----

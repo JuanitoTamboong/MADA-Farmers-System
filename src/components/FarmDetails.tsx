@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import '../css/FarmDetails.css';
 import PageLayout from '../shared/PageLayout';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
+import AddFarmModal, { type FarmFormPayload } from './AddFarmModal';
 
 interface FarmDetailsProps {
   farmId?: string;
@@ -49,6 +51,11 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
     farm: FarmRow | null;
     error: string | null;
   } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile || !farmId) return;
@@ -103,6 +110,108 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
     profileLoading ||
     (Boolean(profile && farmId) && farmResult?.farmId !== farmId);
 
+  const handleUpdateFarm = async (payload: FarmFormPayload) => {
+    if (!farm || !profile || isSaving || isDeleting) return;
+
+    const areaHectares = Number.parseFloat(payload.area);
+    const variety = payload.variety?.trim();
+    if (!Number.isFinite(areaHectares) || areaHectares <= 0) {
+      setActionError('Please enter a valid area in hectares.');
+      return;
+    }
+    if (!variety) {
+      setActionError('Please enter the crop variety.');
+      return;
+    }
+
+    setIsSaving(true);
+    setActionError(null);
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from('farms')
+        .update({
+          name: payload.name.trim(),
+          location: payload.location.trim() || null,
+          area_hectares: areaHectares,
+          crop: payload.crop.trim() || null,
+          variety,
+          status: payload.status ?? farm.status,
+          planted_date: payload.plantedDate || null,
+          expected_harvest: payload.expectedHarvest || null,
+          image_url: payload.image || null,
+        })
+        .eq('id', farm.id)
+        .eq('farmer_id', profile.id)
+        .select(
+          'id, name, location, area_hectares, crop, variety, status, planted_date, expected_harvest, image_url'
+        )
+        .maybeSingle();
+
+      if (updateError) {
+        if (updateError.code === '23505') {
+          setActionError('You already have a farm with that name.');
+        } else {
+          setActionError(updateError.message);
+        }
+        return;
+      }
+
+      if (!data) {
+        setActionError('This farm could not be updated or is no longer available.');
+        return;
+      }
+
+      setFarmResult({ farmId: farm.id, farm: data as FarmRow, error: null });
+      setIsEditing(false);
+    } catch (updateError) {
+      setActionError(
+        updateError instanceof Error
+          ? updateError.message
+          : 'Unable to update this farm. Please try again.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteFarm = async () => {
+    if (!farm || !profile || isSaving || isDeleting) return;
+
+    setIsDeleting(true);
+    setActionError(null);
+
+    try {
+      const { data, error: deleteError } = await supabase
+        .from('farms')
+        .delete()
+        .eq('id', farm.id)
+        .eq('farmer_id', profile.id)
+        .select('id')
+        .maybeSingle();
+
+      if (deleteError) {
+        setActionError(deleteError.message);
+        return;
+      }
+
+      if (!data) {
+        setActionError('This farm could not be deleted or is no longer available.');
+        return;
+      }
+
+      onBack();
+    } catch (deleteError) {
+      setActionError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'Unable to delete this farm. Please try again.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <PageLayout
@@ -154,7 +263,8 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
   }
 
   return (
-    <PageLayout activeTab="Farm" onNavigate={onNavigate}>
+      <>
+      <PageLayout activeTab="Farm" onNavigate={onNavigate}>
       <div className="details-content">
         {/* BANNER */}
         <div className="details-banner-container">
@@ -204,6 +314,37 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
               )}
             </div>
           </div>
+
+          <div className="farm-action-buttons">
+            <button
+              type="button"
+              className="edit-btn"
+              onClick={() => {
+                setActionError(null);
+                setIsEditing(true);
+              }}
+              disabled={isSaving || isDeleting}
+            >
+              Edit Farm
+            </button>
+            <button
+              type="button"
+              className="delete-farm-btn"
+              onClick={() => {
+                setActionError(null);
+                setIsDeleteConfirmOpen(true);
+              }}
+              disabled={isSaving || isDeleting}
+            >
+              Delete Farm
+            </button>
+          </div>
+
+          {actionError && (
+            <p className="details-error" role="alert">
+              {actionError}
+            </p>
+          )}
 
           {/* STATS */}
           <div className="stats-row">
@@ -261,6 +402,86 @@ function FarmDetails({ farmId, onBack, onNavigate }: FarmDetailsProps) {
         </div>
       </div>
     </PageLayout>
+    {isEditing && (
+      <AddFarmModal
+        mode="edit"
+        saving={isSaving}
+        onClose={() => setIsEditing(false)}
+        onSave={handleUpdateFarm}
+        initialValues={{
+          name: farm.name,
+          location: farm.location ?? '',
+          area: String(farm.area_hectares),
+          crop: farm.crop ?? '',
+          variety: farm.variety ?? '',
+          status: farm.status,
+          plantedDate: farm.planted_date ?? '',
+          expectedHarvest: farm.expected_harvest ?? '',
+          image: farm.image_url,
+        }}
+      />
+    )}
+    {isDeleteConfirmOpen &&
+      createPortal(
+        <div
+          className="delete-confirm-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !isDeleting) {
+              setIsDeleteConfirmOpen(false);
+            }
+          }}
+        >
+          <section
+            className="delete-confirm-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-confirm-title"
+            aria-describedby="delete-confirm-description"
+          >
+            <div className="delete-confirm-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 8v4m0 4h.01M10.3 3.9 1.8 18.2A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <h2 id="delete-confirm-title">Delete this farm?</h2>
+            <p id="delete-confirm-description">
+              <strong>{farm.name}</strong> and its farm record will be
+              permanently deleted. This action can&apos;t be undone.
+            </p>
+            {actionError && (
+              <p className="delete-confirm-error" role="alert">
+                {actionError}
+              </p>
+            )}
+            <div className="delete-confirm-actions">
+              <button
+                type="button"
+                className="delete-cancel-btn"
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="delete-confirm-btn"
+                onClick={handleDeleteFarm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting…' : 'Yes, delete farm'}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
