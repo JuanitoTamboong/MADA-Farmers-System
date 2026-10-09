@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import PageLayout from '../shared/PageLayout';
 import farmImage from '../assets/images/farm.jfif';
+import mayaBird from '../assets/images/mada-dashboard.png';
 import '../css/FarmerDashboard.css';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
@@ -432,6 +433,12 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
                   <span className="weather-temp">{weather.tempC}°</span>
                   <span className="weather-unit">C</span>
                 </div>
+                <img
+                  className="weather-maya-bird"
+                  src={mayaBird}
+                  alt=""
+                  aria-hidden="true"
+                />
                 <div className="weather-summary">
                   <strong>{weather.description}</strong>
                   <span>
