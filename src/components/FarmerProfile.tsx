@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import PageLayout from "../shared/PageLayout";
 import PageHeader from "../shared/PageHeader";
 import farmerAvatar from "../assets/images/mada-dashboard.png";
+import profileSuccessImage from "../assets/images/profile-success.png";
 import { useFarmerProfile } from "../hooks/useFarmerProfile";
 import { supabase } from "../supabase/supabase-client";
 import "../css/FarmerProfile.css";
@@ -376,7 +377,13 @@ function FarmerProfile({ onLogout, onNavigate }: FarmerProfileProps) {
               {saveSuccess ? (
                 <>
                   <div className="profile-edit-success" role="status">
-                    Your profile has been updated successfully.
+                    <img
+                      src={profileSuccessImage}
+                      alt=""
+                      className="profile-success-image"
+                    />
+                    <strong>Profile updated successfully!</strong>
+                    Your profile changes have been saved.
                   </div>
                   {saveError && (
                     <p className="profile-edit-error" role="alert">

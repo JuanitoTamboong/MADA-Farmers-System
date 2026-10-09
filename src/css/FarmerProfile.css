@@ -312,9 +312,26 @@
 }
 
 .profile-edit-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   border: 1px solid #bbf7d0;
   background: #f0fdf4;
   color: #166534;
+  text-align: center;
+}
+
+.profile-success-image {
+  display: block;
+  width: 104px;
+  height: 104px;
+  margin-bottom: 4px;
+  object-fit: contain;
+}
+
+.profile-edit-success strong {
+  font-size: 15px;
 }
 
 @media (prefers-reduced-motion: reduce) {
