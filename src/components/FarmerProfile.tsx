@@ -8,6 +8,55 @@ import { useFarmerProfile } from "../hooks/useFarmerProfile";
 import { supabase } from "../supabase/supabase-client";
 import "../css/FarmerProfile.css";
 
+const MAX_PROFILE_PHOTO_DIMENSION = 512;
+
+function resizeProfilePhoto(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const imageUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(imageUrl);
+      const scale = Math.min(
+        1,
+        MAX_PROFILE_PHOTO_DIMENSION / Math.max(image.width, image.height)
+      );
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("Unable to prepare your profile photo."));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Unable to prepare your profile photo."));
+            return;
+          }
+          resolve(
+            new File([blob], "profile-photo.webp", {
+              type: "image/webp",
+              lastModified: Date.now(),
+            })
+          );
+        },
+        "image/webp",
+        0.82
+      );
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(imageUrl);
+      reject(new Error("The selected image could not be opened."));
+    };
+    image.src = imageUrl;
+  });
+}
+
 interface FarmerProfileProps {
   onLogout?: () => void;
   onNavigate?: (screen: string) => void;
@@ -105,15 +154,13 @@ function FarmerProfile({ onLogout, onNavigate }: FarmerProfileProps) {
     let uploadedAvatarPath: string | null = null;
     try {
       if (avatarFile) {
-        const extension = avatarFile.name.includes(".")
-          ? avatarFile.name.split(".").pop()?.toLowerCase()
-          : "jpg";
-        uploadedAvatarPath = `${profile.id}/avatar-${crypto.randomUUID()}.${extension || "jpg"}`;
+        const resizedAvatar = await resizeProfilePhoto(avatarFile);
+        uploadedAvatarPath = `${profile.id}/avatar-${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("profile-avatars")
-          .upload(uploadedAvatarPath, avatarFile, {
+          .upload(uploadedAvatarPath, resizedAvatar, {
             cacheControl: "3600",
-            contentType: avatarFile.type,
+            contentType: resizedAvatar.type,
             upsert: false,
           });
 
@@ -403,12 +450,19 @@ function FarmerProfile({ onLogout, onNavigate }: FarmerProfileProps) {
                       src={avatarPreview ?? currentAvatar}
                       alt="Profile preview"
                     />
-                    <label
-                      className="profile-avatar-picker"
-                      htmlFor="profile-avatar"
-                    >
-                      {avatarFile ? "Choose a different photo" : "Change photo"}
-                    </label>
+                    <div className="profile-avatar-actions">
+                      <label
+                        className="profile-avatar-picker"
+                        htmlFor="profile-avatar"
+                      >
+                        {avatarFile
+                          ? "Choose a different photo"
+                          : "Change photo"}
+                      </label>
+                      <span className="profile-avatar-help">
+                        Photos are resized to fit your profile.
+                      </span>
+                    </div>
                     <input
                       id="profile-avatar"
                       type="file"

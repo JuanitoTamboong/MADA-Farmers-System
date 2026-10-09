@@ -229,6 +229,14 @@
   object-fit: cover;
 }
 
+.profile-avatar-actions {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
 .profile-avatar-picker {
   display: inline-flex;
   align-items: center;
@@ -242,6 +250,12 @@
   font-weight: 700;
   cursor: pointer;
   transition: background 160ms ease, transform 160ms ease;
+}
+
+.profile-avatar-help {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .profile-avatar-picker:hover {

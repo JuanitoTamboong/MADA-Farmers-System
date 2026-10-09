@@ -1,4 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Droplets,
+  Sun,
+  Thermometer,
+  Wind,
+} from 'lucide-react';
 import PageLayout from '../shared/PageLayout';
 import farmImage from '../assets/images/farm.jfif';
 import farmerAvatar from '../assets/images/mada-dashboard.png';
@@ -27,19 +40,51 @@ interface WeatherState {
   highC: number;
   lowC: number;
   description: string;
+  code: number;
+  feelsLikeC: number;
+  humidity: number;
+  windKph: number;
+  precipitationChance: number;
+  forecast: Array<{
+    date: string;
+    highC: number;
+    lowC: number;
+    description: string;
+    code: number;
+    precipitationChance: number;
+  }>;
 }
 
 function describeWeather(code: number): string {
   if (code === 0) return 'Clear sky';
-  if (code <= 2) return 'Partly cloudy';
+  if (code === 1) return 'Mainly clear';
+  if (code === 2) return 'Partly cloudy';
   if (code === 3) return 'Overcast';
-  if (code <= 48) return 'Foggy';
-  if (code <= 57) return 'Drizzle';
-  if (code <= 67) return 'Rain';
-  if (code <= 77) return 'Snow';
-  if (code <= 82) return 'Rain showers';
-  if (code <= 86) return 'Snow showers';
-  return 'Thunderstorm';
+  if (code === 45 || code === 48) return 'Foggy';
+  if ([51, 53, 55].includes(code)) return 'Drizzle';
+  if ([56, 57].includes(code)) return 'Freezing drizzle';
+  if ([61, 63, 65].includes(code)) return 'Rain';
+  if ([66, 67].includes(code)) return 'Freezing rain';
+  if ([71, 73, 75, 77].includes(code)) return 'Snow';
+  if ([80, 81, 82].includes(code)) return 'Rain showers';
+  if ([85, 86].includes(code)) return 'Snow showers';
+  if ([95, 96, 99].includes(code)) return 'Thunderstorm';
+  return 'Weather unavailable';
+}
+
+function WeatherIcon({ code, size = 34 }: { code: number; size?: number }) {
+  const Icon =
+    code === 0 ? Sun
+      : code <= 2 ? CloudSun
+        : code === 3 ? Cloud
+          : code === 45 || code === 48 ? CloudFog
+            : [51, 53, 55, 56, 57].includes(code) ? CloudDrizzle
+              : [61, 63, 65, 66, 67, 80, 81, 82].includes(code) ? CloudRain
+                : [71, 73, 75, 77, 85, 86].includes(code) ? CloudSnow
+                  : [95, 96, 99].includes(code) ? CloudLightning
+                    : CloudSun;
+
+  return <Icon size={size} strokeWidth={1.8} aria-hidden="true" />;
 }
 
 function greetingForHour(hour: number): string {
@@ -190,6 +235,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             query
           )}&count=1&language=en&format=json`
         );
+        if (!geoRes.ok) throw new Error('Unable to find weather for your address.');
         const geo = await geoRes.json();
         const place = geo?.results?.[0];
 
@@ -202,8 +248,9 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
         }
 
         const wxRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`
+          `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`
         );
+        if (!wxRes.ok) throw new Error('Unable to load the weather forecast.');
         const wx = await wxRes.json();
         if (cancelled) return;
 
@@ -212,6 +259,23 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
           highC: Math.round(wx.daily.temperature_2m_max[0]),
           lowC: Math.round(wx.daily.temperature_2m_min[0]),
           description: describeWeather(wx.current.weather_code),
+          code: wx.current.weather_code,
+          feelsLikeC: Math.round(wx.current.apparent_temperature),
+          humidity: Math.round(wx.current.relative_humidity_2m),
+          windKph: Math.round(wx.current.wind_speed_10m),
+          precipitationChance: Math.round(
+            wx.daily.precipitation_probability_max[0] ?? 0
+          ),
+          forecast: wx.daily.time.slice(1).map((date: string, index: number) => ({
+            date,
+            highC: Math.round(wx.daily.temperature_2m_max[index + 1]),
+            lowC: Math.round(wx.daily.temperature_2m_min[index + 1]),
+            description: describeWeather(wx.daily.weather_code[index + 1]),
+            code: wx.daily.weather_code[index + 1],
+            precipitationChance: Math.round(
+              wx.daily.precipitation_probability_max[index + 1] ?? 0
+            ),
+          })),
         });
         setWeatherLoading(false);
       } catch {
@@ -311,40 +375,108 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
         </header>
 
         {/* WEATHER — shows live data, or a placeholder if lookup fails */}
-        <section className="weather-card">
+        <section className="weather-card" aria-label="Local weather forecast">
           {weather ? (
-            <>
-              <div className="weather-main">
-                <div className="weather-status-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                    <circle cx="12" cy="10" r="4" fill="#F59E0B" />
-                    <path
-                      d="M6 16.5C6 14.57 7.57 13 9.5 13C10.23 13 10.91 13.23 11.47 13.62C12.27 12.63 13.51 12 14.9 12C17.33 12 19.3 13.97 19.3 16.4C19.3 16.6 19.28 16.8 19.25 17H6.25C6.09 16.85 6 16.68 6 16.5Z"
-                      fill="#E2E8F0"
-                    />
+            <div className="weather-content">
+              <div className="weather-heading">
+                <div>
+                  <span className="weather-eyebrow">LOCAL WEATHER</span>
+                  <h2>Today&apos;s forecast</h2>
+                </div>
+                <span className="weather-location">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 22s7-6.2 7-13a7 7 0 1 0-14 0c0 6.8 7 13 7 13Z" />
+                    <circle cx="12" cy="9" r="2.5" />
                   </svg>
-                </div>
-                <div className="weather-info">
-                  <h2 className="weather-temp">{weather.tempC}°C</h2>
-                  <span className="weather-desc">{weather.description}</span>
-                </div>
-              </div>
-              <div className="weather-highlow">
-                <div>H: {weather.highC}°</div>
-                <div>L: {weather.lowC}°</div>
-              </div>
-            </>
-          ) : (
-            <div className="weather-main">
-              <div className="weather-info">
-                <h2 className="weather-temp">
-                  {weatherUnavailable ? '—' : '…'}
-                </h2>
-                <span className="weather-desc">
-                  {weatherUnavailable
-                    ? 'Weather unavailable for this address'
-                    : 'Loading weather…'}
+                  {profile.address.split(',').slice(-1)[0].trim()}
                 </span>
+              </div>
+
+              <div className="weather-current">
+                <div className="weather-condition-icon">
+                  <WeatherIcon
+                    code={weather.code}
+                    size={42}
+                  />
+                </div>
+                <div className="weather-current-reading">
+                  <span className="weather-temp">{weather.tempC}°</span>
+                  <span className="weather-unit">C</span>
+                </div>
+                <div className="weather-summary">
+                  <strong>{weather.description}</strong>
+                  <span>
+                    H: {weather.highC}° <span aria-hidden="true">·</span> L:{' '}
+                    {weather.lowC}°
+                  </span>
+                </div>
+              </div>
+
+              <div className="weather-details">
+                <div className="weather-detail">
+                  <Thermometer size={17} aria-hidden="true" />
+                  <span>Feels like</span>
+                  <strong>{weather.feelsLikeC}°</strong>
+                </div>
+                <div className="weather-detail">
+                  <Droplets size={17} aria-hidden="true" />
+                  <span>Rain chance</span>
+                  <strong>{weather.precipitationChance}%</strong>
+                </div>
+                <div className="weather-detail">
+                  <Wind size={17} aria-hidden="true" />
+                  <span>Wind</span>
+                  <strong>{weather.windKph} km/h</strong>
+                </div>
+                <div className="weather-detail">
+                  <Droplets size={17} aria-hidden="true" />
+                  <span>Humidity</span>
+                  <strong>{weather.humidity}%</strong>
+                </div>
+              </div>
+
+              <div className="weather-forecast">
+                {weather.forecast.map((day) => (
+                  <div className="weather-forecast-day" key={day.date}>
+                    <span className="forecast-weekday">
+                      {new Date(`${day.date}T12:00:00`).toLocaleDateString(
+                        undefined,
+                        { weekday: 'short' }
+                      )}
+                    </span>
+                    <WeatherIcon
+                      code={day.code}
+                      size={20}
+                    />
+                    <span className="forecast-temperatures">
+                      <strong>{day.highC}°</strong>
+                      <span>{day.lowC}°</span>
+                    </span>
+                    <span className="forecast-rain">
+                      <Droplets size={11} aria-hidden="true" />
+                      {day.precipitationChance}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="weather-empty">
+              <div className="weather-empty-icon">
+                {weatherUnavailable ? <Cloud size={28} /> : <CloudSun size={28} />}
+              </div>
+              <div>
+                <span className="weather-eyebrow">LOCAL WEATHER</span>
+                <h2>
+                  {weatherUnavailable
+                    ? 'Forecast unavailable'
+                    : 'Loading forecast…'}
+                </h2>
+                <p>
+                  {weatherUnavailable
+                    ? 'Add your address to see local conditions.'
+                    : 'Getting current conditions and the 3-day outlook.'}
+                </p>
               </div>
             </div>
           )}
