@@ -22,6 +22,8 @@ export interface TaskPayload {
 
 interface AddTaskModalProps {
   defaultDate?: string;   // YYYY-MM-DD
+  initialValues?: TaskPayload;
+  mode?: 'add' | 'edit';
   saving?: boolean;       // parent-controlled; true while insert is in flight
   error?: string | null;
   onClose: () => void;
@@ -30,6 +32,8 @@ interface AddTaskModalProps {
 
 function AddTaskModal({
   defaultDate,
+  initialValues,
+  mode = 'add',
   saving = false,
   error,
   onClose,
@@ -40,10 +44,10 @@ function AddTaskModal({
     : new Date().toISOString().slice(0, 16);
 
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    category: 'Irrigation' as TaskCategory,
-    dueAt: initial,
+    title: initialValues?.title ?? '',
+    description: initialValues?.description ?? '',
+    category: initialValues?.category ?? ('Irrigation' as TaskCategory),
+    dueAt: initialValues?.dueAt ?? initial,
   });
 
   // 'idle'     = user is filling the form
@@ -92,7 +96,15 @@ function AddTaskModal({
         }`}
       >
         <div className="modal-header">
-          <h2>{showSuccess ? 'Task Added' : 'Add Task'}</h2>
+          <h2>
+            {showSuccess
+              ? mode === 'edit'
+                ? 'Task Updated'
+                : 'Task Added'
+              : mode === 'edit'
+                ? 'Edit Task'
+                : 'Add Task'}
+          </h2>
           <button
             type="button"
             className="close-btn"
@@ -111,7 +123,9 @@ function AddTaskModal({
               alt="Maya bird celebrating"
               className="task-success-logo"
             />
-            <h2>Task added successfully!</h2>
+            <h2>
+              Task {mode === 'edit' ? 'updated' : 'added'} successfully!
+            </h2>
             <p>
               It will appear on your calendar right away.
             </p>
@@ -181,7 +195,13 @@ function AddTaskModal({
               className="save-farm-btn"
               disabled={saving}
             >
-              {saving ? 'Saving…' : 'Save Task'}
+              {saving
+                ? mode === 'edit'
+                  ? 'Updating…'
+                  : 'Saving…'
+                : mode === 'edit'
+                  ? 'Update Task'
+                  : 'Save Task'}
             </button>
           </form>
         )}

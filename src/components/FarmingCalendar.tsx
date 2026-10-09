@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import PageLayout from '../shared/PageLayout';
 import PageHeader from '../shared/PageHeader';
 import AddTaskModal from './AddTaskModal';
 import type { TaskPayload, TaskCategory } from './AddTaskModal';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
+import deleteMayaBird from '../assets/images/maya-bird-delete.png';
 import '../css/FarmingCalendar.css';
 
 interface FarmingCalendarProps {
@@ -51,6 +53,13 @@ function toDateInput(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+function toDateTimeInput(d: Date): string {
+  const date = toDateInput(d);
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${date}T${hours}:${minutes}`;
 }
 
 function formatTime(iso: string): string {
@@ -164,6 +173,30 @@ function TaskIcon({ category }: { category: TaskCategory | null }) {
   );
 }
 
+function TaskActions({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="task-actions">
+      <button type="button" onClick={onEdit} aria-label="Edit task">
+        Edit
+      </button>
+      <button
+        type="button"
+        className="task-delete-action"
+        onClick={onDelete}
+        aria-label="Delete task"
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
 function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
   const { profile, loading: profileLoading, error: profileError } =
     useFarmerProfile();
@@ -182,6 +215,8 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskRow | null>(null);
+  const [deletingTask, setDeletingTask] = useState<TaskRow | null>(null);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
 
@@ -231,29 +266,108 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
     setError(null);
     setSuccessMessage(null);
 
-    const { error: dbError } = await supabase.from('tasks').insert({
-      farmer_id: profile.id,
-      title: payload.title,
-      description: payload.description ?? null,
-      category: payload.category,
-      due_at: dueIso,
-    });
+    try {
+      if (editingTask) {
+        const { data, error: dbError } = await supabase
+          .from('tasks')
+          .update({
+            title: payload.title,
+            description: payload.description ?? null,
+            category: payload.category,
+            due_at: dueIso,
+          })
+          .eq('id', editingTask.id)
+          .eq('farmer_id', profile.id)
+          .select('id')
+          .maybeSingle();
 
-    savingRef.current = false;
-    setSaving(false);
-
-    if (dbError) {
-      const msg = dbError.message.toLowerCase();
-      if (dbError.code === '23505' || msg.includes('duplicate key')) {
-        setError('You already have that task on that day.');
+        if (dbError) {
+          const msg = dbError.message.toLowerCase();
+          setError(
+            dbError.code === '23505' || msg.includes('duplicate key')
+              ? 'You already have that task on that day.'
+              : dbError.message
+          );
+          return false;
+        }
+        if (!data) {
+          setError('This task could not be updated or is no longer available.');
+          return false;
+        }
       } else {
-        setError(dbError.message);
-      }
-      return false;
-    }
+        const { error: dbError } = await supabase.from('tasks').insert({
+          farmer_id: profile.id,
+          title: payload.title,
+          description: payload.description ?? null,
+          category: payload.category,
+          due_at: dueIso,
+        });
 
-    await loadTasks();
-    return true;
+        if (dbError) {
+          const msg = dbError.message.toLowerCase();
+          setError(
+            dbError.code === '23505' || msg.includes('duplicate key')
+              ? 'You already have that task on that day.'
+              : dbError.message
+          );
+          return false;
+        }
+      }
+
+      await loadTasks();
+      return true;
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'Unable to save this task. Please try again.'
+      );
+      return false;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!profile || !deletingTask || savingRef.current) return;
+
+    savingRef.current = true;
+    setSaving(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const { data, error: dbError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', deletingTask.id)
+        .eq('farmer_id', profile.id)
+        .select('id')
+        .maybeSingle();
+
+      if (dbError) {
+        setError(dbError.message);
+        return;
+      }
+      if (!data) {
+        setError('This task could not be deleted or is no longer available.');
+        return;
+      }
+
+      setDeletingTask(null);
+      await loadTasks();
+      setSuccessMessage('Task deleted successfully.');
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'Unable to delete this task. Please try again.'
+      );
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   const toggleComplete = async (task: TaskRow) => {
@@ -262,7 +376,8 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
     const { error: dbError } = await supabase
       .from('tasks')
       .update({ completed_at: next })
-      .eq('id', task.id);
+      .eq('id', task.id)
+      .eq('farmer_id', profile?.id);
 
     if (dbError) {
       setError(dbError.message);
@@ -370,7 +485,7 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
           </p>
         )}
 
-        {error && !modalOpen && (
+        {error && !modalOpen && !deletingTask && (
           <p className="calendar-error" role="alert">
             {error}
           </p>
@@ -387,7 +502,11 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
             <button
               type="button"
               className="add-task-link"
-              onClick={() => setModalOpen(true)}
+              onClick={() => {
+                setEditingTask(null);
+                setError(null);
+                setModalOpen(true);
+              }}
             >
               + Add Task
             </button>
@@ -448,6 +567,17 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
                         {formatTime(task.due_at)}
                       </span>
                     </div>
+                    <TaskActions
+                      onEdit={() => {
+                        setError(null);
+                        setEditingTask(task);
+                        setModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        setError(null);
+                        setDeletingTask(task);
+                      }}
+                    />
                   </div>
                 </div>
               ))
@@ -479,6 +609,17 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
                       <h4>{t.title}</h4>
                       <p>{formatDay(t.due_at)}</p>
                     </div>
+                    <TaskActions
+                      onEdit={() => {
+                        setError(null);
+                        setEditingTask(t);
+                        setModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        setError(null);
+                        setDeletingTask(t);
+                      }}
+                    />
                   </div>
                 </div>
               ))
@@ -488,17 +629,80 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
 
         {modalOpen && (
           <AddTaskModal
+            key={editingTask?.id ?? 'new-task'}
             defaultDate={toDateInput(selectedDate)}
+            mode={editingTask ? 'edit' : 'add'}
+            initialValues={
+              editingTask
+                ? {
+                    title: editingTask.title,
+                    description: editingTask.description ?? undefined,
+                    category: editingTask.category ?? 'Irrigation',
+                    dueAt: toDateTimeInput(new Date(editingTask.due_at)),
+                  }
+                : undefined
+            }
             saving={saving}
             error={error}
             onClose={() => {
               if (savingRef.current) return;
               setModalOpen(false);
+              setEditingTask(null);
             }}
             onSave={handleSaveTask}
           />
         )}
       </div>
+      {deletingTask &&
+        createPortal(
+          <div className="task-delete-overlay">
+            <section
+              className="task-delete-dialog"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="task-delete-title"
+              aria-describedby="task-delete-description"
+            >
+              <img
+                src={deleteMayaBird}
+                alt="MADA"
+                className="task-delete-logo"
+              />
+              <h2 id="task-delete-title">Delete this task?</h2>
+              <p id="task-delete-description">
+                <strong>{deletingTask.title}</strong> will be permanently
+                deleted. This action can&apos;t be undone.
+              </p>
+              {error && (
+                <p className="task-delete-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="task-delete-actions">
+                <button
+                  type="button"
+                  className="task-delete-cancel"
+                  onClick={() => {
+                    setDeletingTask(null);
+                    setError(null);
+                  }}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="task-delete-confirm"
+                  onClick={handleDeleteTask}
+                  disabled={saving}
+                >
+                  {saving ? 'Deleting…' : 'Yes, delete task'}
+                </button>
+              </div>
+            </section>
+          </div>,
+          document.body
+        )}
     </PageLayout>
   );
 }
