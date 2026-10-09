@@ -6,6 +6,7 @@ export interface FarmerProfile {
   full_name: string;
   email: string;
   address: string;
+  avatar_path: string | null;
 }
 
 interface State {
@@ -37,7 +38,7 @@ export function useFarmerProfile(): State {
 
       const { data, error } = await supabase
         .from('farmers')
-        .select('id, full_name, email, address')
+        .select('id, full_name, email, address, avatar_path')
         .eq('id', userData.user.id)
         .maybeSingle();
 
