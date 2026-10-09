@@ -6,7 +6,7 @@ import {
   EXPENSE_CATEGORIES,
   type ExpenseCategory,
   type ExpensePayload,
-} from './expenseTypes';
+} from '../ts/expenseTypes';
 
 interface AddExpenseModalProps {
   saving?: boolean;

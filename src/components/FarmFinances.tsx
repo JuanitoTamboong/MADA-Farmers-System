@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import PageLayout from '../shared/PageLayout';
 import PageHeader from '../shared/PageHeader';
 import AddExpenseModal from './AddExpensesModal';
-import { EXPENSE_CATEGORIES, type ExpenseCategory, type ExpensePayload } from './expenseTypes';
+import { EXPENSE_CATEGORIES, type ExpenseCategory, type ExpensePayload } from '../ts/expenseTypes';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
 import '../css/FarmFinances.css';
