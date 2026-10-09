@@ -13,9 +13,10 @@
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 12px;
   flex-shrink: 0;
+  gap: 12px;
 }
 
 .greeting-sub {
@@ -48,18 +49,53 @@
 }
 
 .header-illustration {
-  width: 95px;
-  height: 70px;
-  cursor: pointer;
+  position: relative;
+  width: 104px;
+  height: 82px;
+  flex: 0 0 104px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
 .illustration-img {
-  width: 100%;
-  height: 100%;
+  width: 112%;
+  height: 112%;
   object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  animation: dashboard-bird-float 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes dashboard-bird-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (max-width: 360px) {
+  .header-illustration {
+    width: 84px;
+    height: 72px;
+    flex-basis: 84px;
+  }
+
+  .user-name {
+    font-size: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .illustration-img {
+    animation: none;
+    will-change: auto;
+  }
 }
 
 /* WEATHER CARD */
@@ -268,4 +304,3 @@
   font-size: 11px;
   color: #718072;
 }
-

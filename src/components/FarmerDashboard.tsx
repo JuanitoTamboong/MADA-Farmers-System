@@ -301,14 +301,10 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             </p>
           </div>
 
-          <div
-            className="header-illustration"
-            onClick={onLogout}
-            title="Click to Logout"
-          >
+          <div className="header-illustration" aria-hidden="true">
             <img
               src={farmerAvatar}
-              alt="Farmer"
+              alt=""
               className="illustration-img"
             />
           </div>
