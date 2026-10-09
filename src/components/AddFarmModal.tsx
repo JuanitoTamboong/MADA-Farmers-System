@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../css/AddFarmModal.css';
+import successMayaBird from '../assets/images/success-maya-bird.png';
 
 export interface FarmFormPayload {
   name: string;
@@ -18,14 +19,16 @@ interface AddFarmModalProps {
   initialValues?: FarmFormPayload;
   mode?: 'add' | 'edit';
   saving?: boolean;
+  error?: string | null;
   onClose: () => void;
-  onSave: (payload: FarmFormPayload) => void | Promise<void>;   // ← THE FIX
+  onSave: (payload: FarmFormPayload) => void | boolean | Promise<void | boolean>;
 }
 
 function AddFarmModal({
   initialValues,
   mode = 'add',
   saving = false,
+  error,
   onClose,
   onSave,
 }: AddFarmModalProps) {
@@ -45,6 +48,25 @@ function AddFarmModal({
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialValues?.image ?? null
   );
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const successTimerRef = useRef<number | null>(null);
+
+  const closeSuccessAfterDelay = () => {
+    if (successTimerRef.current !== null) {
+      window.clearTimeout(successTimerRef.current);
+    }
+    successTimerRef.current = window.setTimeout(onClose, 1400);
+  };
+
+  useEffect(
+    () => () => {
+      if (successTimerRef.current !== null) {
+        window.clearTimeout(successTimerRef.current);
+      }
+    },
+    []
+  );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,13 +84,13 @@ function AddFarmModal({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 🚫 Already saving — ignore extra submits.
-    if (saving) return;
+    if (saving || showSuccess) return;
 
-    onSave({
+    const saved = await onSave({
       name: form.name,
       location: form.location,
       area: form.area,
@@ -79,25 +101,55 @@ function AddFarmModal({
       expectedHarvest: form.expectedHarvest || undefined,
       image: imagePreview,
     });
+    if (mode === 'add' && saved === true) {
+      setShowSuccess(true);
+      closeSuccessAfterDelay();
+    }
   };
 
   const modal = (
-    <div className="modal-overlay">
-      <div className="modal-content page-transition">
+    <div className={`modal-overlay${showSuccess ? ' task-success-overlay' : ''}`}>
+      <div
+        className={`modal-content page-transition${
+          showSuccess ? ' task-success-dialog' : ''
+        }`}
+      >
         <div className="modal-header">
-          <h2>{mode === 'edit' ? 'Edit Farm' : 'Add New Farm'}</h2>
+          <h2>
+            {mode === 'edit'
+              ? 'Edit Farm'
+              : showSuccess
+                ? 'Farm Added'
+                : 'Add New Farm'}
+          </h2>
           <button
             type="button"
             className="close-btn"
             onClick={onClose}
-            disabled={saving}
+            disabled={saving || showSuccess}
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
+        {showSuccess ? (
+          <div className="task-success-content" role="status" aria-live="polite">
+            <img
+              src={successMayaBird}
+              alt="Maya bird celebrating"
+              className="task-success-logo"
+            />
+            <h2>Farm added successfully!</h2>
+            <p>Your farm is now saved to your farm list.</p>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="add-farm-form">
+          {error && (
+            <p className="farms-error" role="alert">
+              {error}
+            </p>
+          )}
           {/* PHOTO UPLOAD */}
           <div className="form-group">
             <label>Farm Photo</label>
@@ -271,6 +323,7 @@ function AddFarmModal({
                 : 'Save Farm'}
           </button>
         </form>
+        )}
       </div>
     </div>
   );

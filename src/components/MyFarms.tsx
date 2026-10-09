@@ -83,9 +83,9 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
   // One UUID per modal session. Duplicate inserts hit the PK and fail cleanly.
   const submissionIdRef = useRef<string>(crypto.randomUUID());
 
-  const loadFarms = useCallback(async () => {
+  const loadFarms = useCallback(async (showLoading = true) => {
     if (!profile) return;
-    setFarmsLoading(true);
+    if (showLoading) setFarmsLoading(true);
     setFarmsError(null);
 
     const { data, error } = await supabase
@@ -99,12 +99,12 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
     if (error) {
       setFarmsError(error.message);
       setFarms([]);
-      setFarmsLoading(false);
+      if (showLoading) setFarmsLoading(false);
       return;
     }
 
     setFarms((data as FarmRow[]).map(rowToItem));
-    setFarmsLoading(false);
+    if (showLoading) setFarmsLoading(false);
   }, [profile]);
 
   useEffect(() => {
@@ -131,23 +131,23 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
     openModal();
   };
 
-  const handleSaveFarm = async (payload: FarmFormPayload) => {
-    if (!profile) return;
+  const handleSaveFarm = async (payload: FarmFormPayload): Promise<boolean> => {
+    if (!profile) return false;
 
     // 🚫 Hard stop: ignore any click that arrives after the first.
     // Uses the ref so it's synchronous — state updates are async.
-    if (savingRef.current) return;
+    if (savingRef.current) return false;
 
     const parsedArea = Number.parseFloat(payload.area);
     if (!Number.isFinite(parsedArea) || parsedArea <= 0) {
       setFarmsError('Please enter a valid area in hectares.');
-      return;
+      return false;
     }
 
     const variety = payload.variety?.trim();
     if (!variety) {
       setFarmsError('Please enter the crop variety.');
-      return;
+      return false;
     }
 
     savingRef.current = true;
@@ -180,23 +180,24 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
         } else {
           setFarmsError(error.message);
         }
-        return;
+        return false;
       }
 
-      setIsModalOpen(false);
-      await loadFarms();
+      await loadFarms(false);
 
       if (data.variety?.trim() !== variety) {
         setFarmsError(
           'Farm saved, but the variety was not saved by the database. Check that the farms.variety column exists and is writable.'
         );
       }
+      return true;
     } catch (saveError) {
       setFarmsError(
         saveError instanceof Error
           ? saveError.message
           : 'Unable to save the farm. Please try again.'
       );
+      return false;
     } finally {
       savingRef.current = false;
       setSaving(false);
@@ -260,7 +261,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
           }
         />
 
-        {farmsError && (
+        {farmsError && !isModalOpen && (
           <p className="farms-error" role="alert">
             {farmsError}
           </p>
@@ -358,6 +359,7 @@ function MyFarms({ onAddFarm, onSelectFarm, onNavigate }: MyFarmsProps) {
         {isModalOpen && (
           <AddFarmModal
             saving={saving}
+            error={farmsError}
             onClose={closeModal}
             onSave={handleSaveFarm}
           />
