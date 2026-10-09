@@ -262,6 +262,13 @@ button.task-icon-circle:active {
   transform: scale(0.95);
 }
 
+button.task-icon-circle.task-completed-toggle {
+  background: #166534;
+  color: #ffffff;
+  opacity: 1;
+  font-weight: 800;
+}
+
 .green-bg { background-color: #e2f1e5; }
 .yellow-bg { background-color: #fef3c7; }
 .red-bg { background-color: #fee2e2; }
@@ -270,6 +277,20 @@ button.task-icon-circle:active {
 .task-info {
   flex: 1;
   min-width: 0;
+}
+
+.task-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .task-info h4 {

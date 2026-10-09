@@ -533,20 +533,21 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
                   <div className="calendar-task-item">
                     <button
                       type="button"
-                      className={`task-icon-circle ${categoryStyle(
-                        task.category
-                      )}`}
                       onClick={() => toggleComplete(task)}
                       aria-label={
                         task.completed_at
-                          ? 'Mark incomplete'
-                          : 'Mark complete'
+                          ? `Mark ${task.title} as incomplete`
+                          : `Mark ${task.title} as complete`
                       }
-                      style={{
-                        opacity: task.completed_at ? 0.4 : 1,
-                        cursor: 'pointer',
-                        border: 'none',
-                      }}
+                      aria-pressed={Boolean(task.completed_at)}
+                      title={
+                        task.completed_at
+                          ? 'Mark as not done'
+                          : 'Mark as done'
+                      }
+                      className={`task-icon-circle ${categoryStyle(
+                        task.category
+                      )}${task.completed_at ? ' task-completed-toggle' : ''}`}
                     >
                       {task.completed_at ? '✓' : (
                         <TaskIcon category={task.category} />
@@ -562,6 +563,11 @@ function FarmingCalendar({ onNavigate }: FarmingCalendarProps) {
                       >
                         {task.title}
                       </h4>
+                      {task.completed_at && (
+                        <span className="task-completed-badge">
+                          <span aria-hidden="true">✓</span> Completed
+                        </span>
+                      )}
                       {task.description && <p>{task.description}</p>}
                       <span className="task-time">
                         {formatTime(task.due_at)}
