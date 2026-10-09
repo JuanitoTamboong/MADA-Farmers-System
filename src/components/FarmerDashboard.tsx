@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import PageLayout from '../shared/PageLayout';
 import farmImage from '../assets/images/farm.jfif';
-import farmerAvatar from '../assets/images/mada-dashboard.png';
 import '../css/FarmerDashboard.css';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
@@ -154,8 +153,32 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
   const [weather, setWeather] = useState<WeatherState | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherFailed, setWeatherFailed] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const greeting = useMemo(() => greetingForHour(new Date().getHours()), []);
+
+  useEffect(() => {
+    if (!profile?.avatar_path) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+    void supabase.storage
+      .from('profile-avatars')
+      .createSignedUrl(profile.avatar_path, 60 * 60)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        setAvatarUrl(error ? null : data.signedUrl);
+      })
+      .catch(() => {
+        if (!cancelled) setAvatarUrl(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.avatar_path]);
 
   // Farms summary
   useEffect(() => {
@@ -365,12 +388,18 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
             </p>
           </div>
 
-          <div className="header-illustration" aria-hidden="true">
-            <img
-              src={farmerAvatar}
-              alt=""
-              className="illustration-img"
-            />
+          <div
+            className="dashboard-profile-avatar"
+            role="img"
+            aria-label={`${firstName}'s profile picture`}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" />
+            ) : (
+              <span aria-hidden="true">
+                {firstName.charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
         </header>
 
