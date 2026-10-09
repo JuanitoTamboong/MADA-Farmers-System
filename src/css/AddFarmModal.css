@@ -197,3 +197,56 @@
   align-items: center;
   justify-content: center;
 }
+
+.task-success-overlay {
+  align-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 18, 0.56);
+  backdrop-filter: blur(4px);
+}
+
+.task-success-dialog {
+  width: min(100%, 350px);
+  max-height: none;
+  padding: 28px 24px 26px;
+  border: 1px solid #f2e8e2;
+  border-radius: 24px;
+  background: #fffefa;
+  box-shadow: 0 24px 70px rgba(15, 23, 18, 0.28);
+  text-align: center;
+  gap: 0;
+  overflow: visible;
+  animation: fadeUp 0.2s ease both;
+}
+
+.task-success-dialog .modal-header {
+  display: none;
+}
+
+.task-success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.task-success-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+}
+
+.task-success-content h2 {
+  margin: 0;
+  color: #18251b;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.task-success-content p {
+  margin: 10px 0 0;
+  color: #667066;
+  font-size: 14px;
+  line-height: 1.55;
+}

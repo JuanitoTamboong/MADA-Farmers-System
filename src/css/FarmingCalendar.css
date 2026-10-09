@@ -55,6 +55,15 @@
   font-size: 18px;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease;
+}
+
+.month-nav-btn:hover {
+  background: #f0f7ef;
+}
+
+.month-nav-btn:active {
+  transform: scale(0.96);
 }
 
 /* WEEK GRID */
@@ -73,6 +82,15 @@
   padding: 8px 0;
   cursor: pointer;
   border-radius: 20px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.week-day:hover {
+  background: rgba(27, 77, 46, 0.05);
 }
 
 .day-name {
@@ -99,16 +117,73 @@
   color: #ffffff;
 }
 
+/* Small dot under today's date when it isn't the selected day */
+.week-day.today:not(.active) .day-number {
+  color: #1b4d2e;
+  position: relative;
+}
+
+.week-day.today:not(.active) .day-number::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1b4d2e;
+}
+
 /* TASKS SECTION */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .tasks-section h3,
 .upcoming-section h3 {
-  margin: 0 0 12px 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 800;
   color: #0d2818;
 }
 
-.task-list-card,
+.tasks-section > h3,
+.upcoming-section > h3 {
+  margin-bottom: 12px;
+}
+
+.add-task-link {
+  background: none;
+  border: none;
+  color: #1b4d2e;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.add-task-link:hover {
+  background: #f0f7ef;
+}
+
+.add-task-link:active {
+  transform: scale(0.97);
+}
+
+.task-list-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Upcoming is a stack of rows, not a single flex row */
 .upcoming-card {
   background: #ffffff;
   border-radius: 18px;
@@ -116,8 +191,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.calendar-task-item,
-.upcoming-card {
+.calendar-task-item {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -138,12 +212,34 @@
   justify-content: center;
   font-size: 18px;
   flex-shrink: 0;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+/* When the icon-circle is a button (toggle complete) */
+button.task-icon-circle {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+button.task-icon-circle:hover {
+  transform: scale(1.05);
+}
+
+button.task-icon-circle:active {
+  transform: scale(0.95);
 }
 
 .green-bg { background-color: #e2f1e5; }
 .yellow-bg { background-color: #fef3c7; }
 .red-bg { background-color: #fee2e2; }
 .mint-bg { background-color: #d1fae5; }
+
+.task-info {
+  flex: 1;
+  min-width: 0;
+}
 
 .task-info h4 {
   margin: 0;
@@ -168,4 +264,29 @@
 
 .upcoming-section {
   margin-top: 20px;
+}
+
+/* Error banner */
+.calendar-error {
+  margin: 12px 0;
+  padding: 14px 16px;
+  text-align: center;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.calendar-success {
+  margin: 12px 0;
+  padding: 14px 16px;
+  text-align: center;
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
 }
