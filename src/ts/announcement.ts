@@ -11,7 +11,7 @@ export type AnnouncementStatus =
   | 'Archived';
 
 export type AnnouncementCategory =
-  | 'Assistance'
+  | 'Request'
   | 'Training'
   | 'Distribution Schedule'
   | 'Weather Advisory'

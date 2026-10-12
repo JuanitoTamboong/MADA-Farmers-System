@@ -672,7 +672,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
 
           <button
             className="grid-item"
-            onClick={() => onNavigate?.('Assistance')}
+            onClick={() => onNavigate?.('Request')}
           >
             <div className="grid-icon-box">
               <svg
@@ -688,7 +688,7 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
                 <path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10" />
               </svg>
             </div>
-            <span>Assistance</span>
+            <span>Request</span>
           </button>
         </section>
 

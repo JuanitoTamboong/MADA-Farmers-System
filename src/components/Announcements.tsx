@@ -18,7 +18,7 @@ type CategoryFilter = 'All' | AnnouncementCategory;
 
 const categories: CategoryFilter[] = [
   'All',
-  'Assistance',
+  'Request',
   'Training',
   'Distribution Schedule',
   'Weather Advisory',
@@ -34,7 +34,7 @@ interface CategoryStyle {
 
 function styleForCategory(category: AnnouncementCategory): CategoryStyle {
   switch (category) {
-    case 'Assistance':
+    case 'Request':
       return {
         cardColor: 'green-tint',
         iconBg: '#bbf7d0',

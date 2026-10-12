@@ -70,7 +70,8 @@ function App() {
       case "announcements":
         setScreen("announcements");
         break;
-      case "Assistance":
+      case "Request":
+      case "request":
       case "assistance":
       case "assistance-request":
         setScreen("assistance");

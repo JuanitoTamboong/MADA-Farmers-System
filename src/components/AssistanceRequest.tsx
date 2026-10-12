@@ -125,7 +125,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
       <div className="assistance-container">
         
         <PageHeader
-          title="Assistance Request"
+          title="Request"
           onBack={() => onNavigate?.("Home")}
         />
 
@@ -145,7 +145,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
           <form className="new-request-form" onSubmit={handleAddNewRequest}>
             <h3>New Request Details</h3>
             <div className="form-group">
-              <label>Assistance Category</label>
+              <label>Request Category</label>
               <select
                 value={requestTitle}
                 onChange={(e) => setRequestTitle(e.target.value)}
