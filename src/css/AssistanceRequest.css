@@ -110,6 +110,28 @@
   border-bottom: 1px solid #f1f5f9;
 }
 
+/* Clickable row (opens the detail modal) */
+.request-item[role='button'] {
+  cursor: pointer;
+  transition: background-color 140ms ease;
+  border-radius: 12px;
+  margin: 0 -8px;
+  padding: 16px 8px;
+}
+
+.request-item[role='button']:hover {
+  background: #f7faf8;
+}
+
+.request-item[role='button']:active {
+  background: #eef5f0;
+}
+
+.request-item[role='button']:focus-visible {
+  outline: 3px solid rgba(30, 94, 58, 0.28);
+  outline-offset: 2px;
+}
+
 .request-icon-circle {
   width: 46px;
   height: 46px;
@@ -145,6 +167,35 @@
   font-weight: 500;
 }
 
+/* ---------- Edit button on pending rows ---------- */
+.request-edit-btn {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #4338ca;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+  flex-shrink: 0;
+}
+
+.request-edit-btn:hover:not(:disabled) {
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+}
+
+.request-edit-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.request-edit-btn:focus-visible {
+  outline: 3px solid rgba(67, 56, 202, 0.28);
+  outline-offset: 2px;
+}
+
 /* ---------- Delete button on pending rows ---------- */
 .request-delete-btn {
   display: grid;
@@ -177,6 +228,172 @@
 .request-delete-btn:focus-visible {
   outline: 3px solid rgba(185, 28, 28, 0.28);
   outline-offset: 2px;
+}
+
+.request-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 18, 0.56);
+  backdrop-filter: blur(4px);
+}
+
+.request-success-dialog {
+  width: min(100%, 350px);
+  padding: 28px 24px 26px;
+  border: 1px solid #f2e8e2;
+  border-radius: 24px;
+  background: #fffefa;
+  box-shadow: 0 24px 70px rgba(15, 23, 18, 0.28);
+  text-align: center;
+  animation: request-pop-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.request-success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.request-success-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+}
+
+.request-success-content h2 {
+  margin: 0;
+  color: #18251b;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.request-success-content p {
+  margin: 10px 0 0;
+  color: #667066;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.request-success-close {
+  min-width: 120px;
+  min-height: 44px;
+  margin-top: 24px;
+  padding: 10px 18px;
+  border: 1px solid #1e5e3a;
+  border-radius: 13px;
+  background: #1e5e3a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.request-success-close:hover {
+  background: #16482c;
+}
+
+.request-delete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 18, 0.56);
+  backdrop-filter: blur(4px);
+}
+
+.request-delete-dialog {
+  width: min(100%, 350px);
+  padding: 28px 24px 22px;
+  border: 1px solid #f2e8e2;
+  border-radius: 24px;
+  background: #fffefa;
+  box-shadow: 0 24px 70px rgba(15, 23, 18, 0.28);
+  text-align: center;
+  animation: request-pop-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.request-delete-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+}
+
+.request-delete-dialog h2 {
+  margin: 0;
+  color: #18251b;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.request-delete-dialog > p {
+  margin: 10px 0 0;
+  color: #667066;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.request-delete-dialog > p strong {
+  color: #344536;
+}
+
+.request-delete-dialog .request-delete-error {
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+  text-align: left;
+}
+
+.request-delete-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.request-delete-actions button {
+  min-height: 44px;
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.request-delete-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.request-delete-cancel {
+  border: 1px solid #dce3da;
+  background: #ffffff;
+  color: #344536;
+}
+
+.request-delete-confirm {
+  border: 1px solid #b91c1c;
+  background: #c62828;
+  color: #ffffff;
+}
+
+.request-delete-confirm:hover:not(:disabled) {
+  background: #a91f1f;
 }
 
 /* ---------- Status pills ---------- */
@@ -235,7 +452,7 @@
 }
 
 /* ============================================================
-   New request popup modal
+   Request modal (compose + preview + detail)
    ============================================================ */
 
 .request-modal-backdrop {
@@ -266,6 +483,11 @@
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.3);
   animation: request-pop-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Wider variant used by the letter-preview + detail modals */
+.request-modal--wide {
+  width: min(100%, 560px);
 }
 
 @keyframes request-pop-in {
@@ -312,6 +534,50 @@
   cursor: not-allowed;
 }
 
+/* ---------- Detail (view) modal blocks ---------- */
+.request-detail-eyebrow {
+  margin: 0 0 2px;
+  color: #43805d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.request-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.request-detail-date {
+  color: #94a3b8;
+  font-size: 12.5px;
+}
+
+.request-detail-block {
+  margin-top: 12px;
+}
+
+.request-detail-block h3 {
+  margin: 0 0 6px;
+  color: #6f7d73;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.request-detail-block p {
+  margin: 0;
+  color: #384b3e;
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- Form inside the modal ---------- */
 .new-request-form {
   display: flex;
@@ -341,8 +607,10 @@
   letter-spacing: 0.01em;
 }
 
+/* Inputs, selects, textareas share the same base look */
 .form-group select,
-.form-group textarea {
+.form-group textarea,
+.form-group input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
@@ -357,7 +625,8 @@
 }
 
 .form-group select:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group input:focus {
   border-color: #1e5e3a;
   background: #ffffff;
 }
@@ -368,9 +637,16 @@
 }
 
 .form-group select:disabled,
-.form-group textarea:disabled {
+.form-group textarea:disabled,
+.form-group input:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+/* Placeholder text — lighter gray */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #94a3b8;
 }
 
 .form-hint {
@@ -383,8 +659,14 @@
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* Push the first (leftmost) action button to the left edge */
+.form-actions .cancel-btn:first-child {
+  margin-right: auto;
 }
 
 .cancel-btn {
@@ -436,14 +718,50 @@
   line-height: 1.45;
 }
 
+/* ---------- Letter preview block ---------- */
+.request-letter-preview {
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border: 1px solid #edf2ee;
+  border-radius: 12px;
+  background: #fbfcfa;
+  color: #334155;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ---------- Small-phone tweaks ---------- */
-@media (max-width: 380px) {
+@media (max-width: 480px) {
   .request-modal {
     padding: 18px 16px 20px;
   }
 
   .request-modal-header h2 {
     font-size: 16px;
+  }
+
+  .request-letter-preview {
+    padding: 14px 14px;
+    font-size: 13px;
+  }
+
+  .form-actions {
+    flex-wrap: wrap;
+  }
+
+  .form-actions .cancel-btn:first-child {
+    margin-right: auto;
+  }
+
+  .request-item[role='button'] {
+    margin: 0 -6px;
+    padding: 14px 6px;
   }
 }
 
@@ -452,7 +770,8 @@
   .send-request-btn,
   .request-modal-backdrop,
   .request-modal,
-  .request-modal-close {
+  .request-modal-close,
+  .request-item[role='button'] {
     animation-duration: 1ms;
     transition-duration: 1ms;
   }

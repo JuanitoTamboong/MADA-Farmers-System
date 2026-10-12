@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import PageLayout from '../shared/PageLayout';
 import PageHeader from '../shared/PageHeader';
 import '../css/AssistanceRequest.css';
+import deleteMayaBird from '../assets/images/maya-bird-delete.png';
+import successMayaBird from '../assets/images/success-maya-bird.png';
 
 import { supabase } from '../supabase/supabase-client';
 import {
@@ -9,6 +12,7 @@ import {
   deleteAssistanceRequest,
   fetchFarmerProfileLite,
   fetchMyAssistanceRequests,
+  updateAssistanceRequest,
 } from '../ts/assistance';
 import type {
   AssistanceCategory,
@@ -134,24 +138,36 @@ function formatLongDate(date: Date): string {
   });
 }
 
+interface RequestFormFields {
+  contact: string;
+  reason: string;
+  additionalDetails: string;
+}
+
 // ---------- auto-generated formal request letter ----------
-// Returns null when the farmer profile is incomplete,
-// so the caller can block submission instead of storing placeholders.
+// Returns null if any required field is missing — caller blocks submit.
 function buildFormalRequest(
   farmer: FarmerProfileLite | null,
   category: AssistanceCategory,
-  reason: string,
+  fields: RequestFormFields,
 ): string | null {
   if (!farmer) return null;
 
   const name = farmer.fullName?.trim();
   const barangay = farmer.barangay?.trim();
-  const contact = farmer.contact?.trim() || 'N/A';
+  const contact = fields.contact.trim() || farmer.contact?.trim() || '';
+  const reason = fields.reason.trim();
 
-  if (!name || !barangay) return null;
+  // Require the reason — no silent fallback
+  if (!name || !barangay || !reason) return null;
 
   const today = formatLongDate(new Date());
-  const reasonText = reason.trim() || 'No additional reason provided.';
+  const additionalText = fields.additionalDetails.trim();
+
+  const senderLines = [name, barangay, contact].filter(
+    (line): line is string => !!line,
+  );
+  const senderBlock = senderLines.join('\n');
 
   const requestLine: Record<AssistanceCategory, string> = {
     Seeds:
@@ -166,52 +182,73 @@ function buildFormalRequest(
       'I would like to formally request financial subsidy under the Municipal Agriculture Assistance Program.',
   };
 
-  return `${name}
-${barangay}
-${contact}
+  const parts = [
+    senderBlock,
+    '',
+    'Office of the Municipal Agriculturist',
+    'Municipal Agriculture Office',
+    'Municipal Hall',
+    '',
+    today,
+    '',
+    '',
+    'Dear Sir/Madame:',
+    '',
+    '',
+    `I am ${name}, a registered farmer of ${barangay}. I have been engaged in farming in this municipality and I am registered under the Municipal Agriculture Office.`,
+    '',
+    requestLine[category],
+    '',
+    reason,
+    additionalText,
+    '',
+    'I would highly appreciate your approval of this request. Kindly contact me at the number provided above so I can coordinate with your office regarding the required documents or schedule.',
+    '',
+    'Thank you for your continued support to our farming community.',
+    '',
+    '',
+    'Respectfully yours,',
+    '',
+    '',
+    name,
+  ];
 
-Office of the Municipal Agriculturist
-Municipal Agriculture Office
-Municipal Hall
-
-${today}
-
-
-Dear Sir/Madame:
-
-
-I am ${name}, a registered farmer of ${barangay}. I have been engaged in farming in this municipality and I am registered under the Municipal Agriculture Office.
-
-${requestLine[category]}
-
-${reasonText}
-
-I would highly appreciate your approval of this request. Kindly contact me at the number provided above so I can coordinate with your office regarding the required documents or schedule.
-
-Thank you for your continued support to our farming community.
-
-
-Respectfully yours,
-
-
-${name}`;
+  return parts
+    .filter((line) => line !== '')
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 }
+
+const blankFields: RequestFormFields = {
+  contact: '',
+  reason: '',
+  additionalDetails: '',
+};
 
 function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [requestTitle, setRequestTitle] =
     useState<AssistanceCategory>('Seeds');
-  const [reason, setReason] = useState('');
+  const [fields, setFields] = useState<RequestFormFields>(blankFields);
 
   const [requests, setRequests] = useState<AssistanceRequestRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [farmerId, setFarmerId] = useState<string | null>(null);
   const [farmerProfile, setFarmerProfile] =
     useState<FarmerProfileLite | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [previewLetter, setPreviewLetter] = useState<string | null>(null);
+
+  // -------- detail (view) modal --------
+  const [viewingRequest, setViewingRequest] =
+    useState<AssistanceRequestRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<AssistanceRequestRecord | null>(null);
 
   // ---- resolve current farmer ----
   useEffect(() => {
@@ -243,7 +280,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     };
   }, []);
 
-  // ---- load farmer profile (for the letter) ----
+  // ---- load farmer profile ----
   useEffect(() => {
     if (!farmerId) return;
     let alive = true;
@@ -251,7 +288,11 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     (async () => {
       try {
         const profile = await fetchFarmerProfileLite(farmerId);
-        if (alive) setFarmerProfile(profile);
+        if (!alive) return;
+        setFarmerProfile(profile);
+        if (profile?.contact) {
+          setFields((current) => ({ ...current, contact: profile.contact }));
+        }
       } catch {
         if (alive) setFarmerProfile(null);
       } finally {
@@ -282,27 +323,101 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     load();
   }, [load]);
 
+  const closeForm = useCallback(() => {
+    if (saving) return;
+    setShowForm(false);
+    setEditingId(null);
+    setFields({ ...blankFields, contact: farmerProfile?.contact ?? '' });
+    setRequestTitle('Seeds');
+    setPreviewLetter(null);
+  }, [saving, farmerProfile?.contact]);
+
   // ---- close modal on Escape ----
   useEffect(() => {
-    if (!showForm) return;
+    if (
+      !showForm &&
+      !previewLetter &&
+      !viewingRequest &&
+      !deleteTarget &&
+      !successMessage
+    ) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !saving) setShowForm(false);
+      if (e.key !== 'Escape') return;
+      if (successMessage) {
+        setSuccessMessage(null);
+      } else if (deleteTarget && !deletingId) {
+        setDeleteTarget(null);
+        setError(null);
+      } else if (previewLetter) setPreviewLetter(null);
+      else if (viewingRequest) setViewingRequest(null);
+      else if (showForm && !saving) closeForm();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [showForm, saving]);
+  }, [
+    showForm,
+    previewLetter,
+    viewingRequest,
+    deleteTarget,
+    deletingId,
+    successMessage,
+    saving,
+    closeForm,
+  ]);
 
-  // ---- lock body scroll while modal is open ----
+  // ---- lock body scroll while any modal is open ----
   useEffect(() => {
-    if (!showForm) return;
+    if (
+      !showForm &&
+      !previewLetter &&
+      !viewingRequest &&
+      !deleteTarget &&
+      !successMessage
+    ) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [showForm]);
+  }, [showForm, previewLetter, viewingRequest, deleteTarget, successMessage]);
 
-  const handleAddNewRequest = async (e: React.FormEvent) => {
+  const setField = <K extends keyof RequestFormFields>(
+    key: K,
+    value: RequestFormFields[K],
+  ) => setFields((current) => ({ ...current, [key]: value }));
+
+  const openCreateForm = () => {
+    setPreviewLetter(null);
+    setViewingRequest(null);
+    setEditingId(null);
+    setRequestTitle('Seeds');
+    setFields({ ...blankFields, contact: farmerProfile?.contact ?? '' });
+    setError(null);
+    setShowForm(true);
+  };
+
+  const openEditForm = (item: AssistanceRequestRecord) => {
+    setPreviewLetter(null);
+    setViewingRequest(null);
+    setEditingId(item.id);
+    setRequestTitle(item.category);
+    setFields({
+      contact: farmerProfile?.contact ?? '',
+      reason: '',
+      additionalDetails: item.notes ?? '',
+    });
+    setError(null);
+    setShowForm(true);
+  };
+
+  const openDetail = (item: AssistanceRequestRecord) => {
+    // Clear other modals so only one renders at a time
+    setPreviewLetter(null);
+    setShowForm(false);
+    setViewingRequest(item);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
     if (!farmerId) {
@@ -310,42 +425,85 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
       return;
     }
 
-    const letter = buildFormalRequest(farmerProfile, requestTitle, reason);
+    // Validate required fields before building the letter
+    if (!fields.reason.trim()) {
+      setError('Please fill in the reason for your request.');
+      return;
+    }
+
+    const letter = buildFormalRequest(farmerProfile, requestTitle, fields);
     if (!letter) {
       setError(
-        'Your farmer profile is incomplete. Please update your name and barangay in Settings before submitting a request.',
+        'Your farmer profile is incomplete. Please update your name and barangay in Settings before submitting.',
       );
       return;
     }
 
     setSaving(true);
     setError(null);
+    setSuccessMessage(null);
     try {
-      const created = await createAssistanceRequest({
-        farmerId,
-        category: requestTitle,
-        notes: letter,
-      });
-      setRequests((current) => [created, ...current]);
+      const wasEditing = Boolean(editingId);
+      if (editingId) {
+        const updated = await updateAssistanceRequest(editingId, {
+          category: requestTitle,
+          notes: letter,
+        });
+        setRequests((current) =>
+          current.map((r) => (r.id === editingId ? updated : r)),
+        );
+      } else {
+        const created = await createAssistanceRequest({
+          farmerId,
+          category: requestTitle,
+          notes: letter,
+        });
+        setRequests((current) => [created, ...current]);
+      }
       setShowForm(false);
-      setReason('');
+      setEditingId(null);
+      setFields({ ...blankFields, contact: farmerProfile?.contact ?? '' });
       setRequestTitle('Seeds');
+      setSuccessMessage(
+        wasEditing
+          ? 'Request updated successfully.'
+          : 'Request submitted successfully.',
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit.');
+      setError(err instanceof Error ? err.message : 'Failed to save.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (deletingId) return;
-    if (!window.confirm('Delete this request? This cannot be undone.')) return;
+  const handlePreview = () => {
+    if (!fields.reason.trim()) {
+      setError('Please fill in the reason for your request before previewing.');
+      return;
+    }
+    const letter = buildFormalRequest(farmerProfile, requestTitle, fields);
+    if (!letter) {
+      setError(
+        'Your farmer profile is incomplete. Please update your name and barangay in Settings before previewing.',
+      );
+      return;
+    }
+    setPreviewLetter(letter);
+  };
 
+  const handleDelete = async () => {
+    if (deletingId || !deleteTarget) return;
+
+    const id = deleteTarget.id;
     setDeletingId(id);
     setError(null);
+    setSuccessMessage(null);
     try {
       await deleteAssistanceRequest(id);
       setRequests((current) => current.filter((r) => r.id !== id));
+      if (viewingRequest?.id === id) setViewingRequest(null);
+      setDeleteTarget(null);
+      setSuccessMessage('Request deleted successfully.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete.');
     } finally {
@@ -353,14 +511,6 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     }
   };
 
-  const closeForm = () => {
-    if (saving) return;
-    setShowForm(false);
-    setReason('');
-    setRequestTitle('Seeds');
-  };
-
-  // Only allow submit if the profile has the required fields
   const profileReady =
     !!farmerProfile?.fullName?.trim() && !!farmerProfile?.barangay?.trim();
 
@@ -374,7 +524,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
 
         <button
           className="send-request-btn"
-          onClick={() => setShowForm(true)}
+          onClick={openCreateForm}
           type="button"
           disabled={!farmerId || loading || profileLoading || !profileReady}
         >
@@ -396,7 +546,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
             <p className="request-empty">Loading your requests…</p>
           )}
 
-          {!loading && error && (
+          {!loading && error && !deleteTarget && (
             <p className="request-empty request-empty--error">{error}</p>
           )}
 
@@ -411,12 +561,23 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
             requests.map((item, index) => {
               const style = styleForCategory(item.category);
               const canDelete = item.status === 'Pending';
+              const canEdit = item.status === 'Pending';
               return (
                 <div
                   key={item.id}
                   className={`request-item ${
                     index < requests.length - 1 ? 'has-divider' : ''
                   }`}
+                  onClick={() => openDetail(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openDetail(item);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View ${item.category} request`}
                 >
                   <div
                     className="request-icon-circle"
@@ -435,10 +596,31 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                     </span>
                   </div>
 
+                  {canEdit && (
+                    <button
+                      className="request-edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditForm(item);
+                      }}
+                      aria-label={`Edit ${item.category} request`}
+                      type="button"
+                    >
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                    </button>
+                  )}
+
                   {canDelete && (
                     <button
                       className="request-delete-btn"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setError(null);
+                        setDeleteTarget(item);
+                      }}
                       disabled={deletingId === item.id}
                       aria-label={`Delete ${item.category} request`}
                       type="button"
@@ -462,7 +644,97 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
             })}
         </div>
 
-        {showForm && (
+        {successMessage &&
+          createPortal(
+            <div className="request-success-overlay">
+              <section
+                className="request-success-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="request-success-title"
+              >
+                <div className="request-success-content" role="status" aria-live="polite">
+                  <img
+                    src={successMayaBird}
+                    alt="Maya bird celebrating"
+                    className="request-success-logo"
+                  />
+                  <h2 id="request-success-title">{successMessage}</h2>
+                  <p>Your assistance request list has been updated.</p>
+                </div>
+                <button
+                  type="button"
+                  className="request-success-close"
+                  onClick={() => setSuccessMessage(null)}
+                >
+                  Done
+                </button>
+              </section>
+            </div>,
+            document.body,
+          )}
+
+        {deleteTarget &&
+          createPortal(
+            <div
+              className="request-delete-overlay"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget && !deletingId) {
+                  setDeleteTarget(null);
+                  setError(null);
+                }
+              }}
+            >
+              <section
+                className="request-delete-dialog"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="request-delete-title"
+                aria-describedby="request-delete-description"
+              >
+                <img
+                  src={deleteMayaBird}
+                  alt="MADA"
+                  className="request-delete-logo"
+                />
+                <h2 id="request-delete-title">Delete this request?</h2>
+                <p id="request-delete-description">
+                  Your <strong>{deleteTarget.category}</strong> request will be
+                  permanently deleted. This action can&apos;t be undone.
+                </p>
+                {error && (
+                  <p className="request-delete-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <div className="request-delete-actions">
+                  <button
+                    type="button"
+                    className="request-delete-cancel"
+                    onClick={() => {
+                      setDeleteTarget(null);
+                      setError(null);
+                    }}
+                    disabled={!!deletingId}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="request-delete-confirm"
+                    onClick={handleDelete}
+                    disabled={!!deletingId}
+                  >
+                    {deletingId ? 'Deleting…' : 'Yes, delete request'}
+                  </button>
+                </div>
+              </section>
+            </div>,
+            document.body,
+          )}
+
+        {/* ---------- CREATE / EDIT MODAL (only when no other modal is open) ---------- */}
+        {showForm && !previewLetter && !viewingRequest && (
           <div
             className="request-modal-backdrop"
             onMouseDown={(e) => {
@@ -470,11 +742,11 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
             }}
             role="dialog"
             aria-modal="true"
-            aria-label="New request"
+            aria-label={editingId ? 'Edit request' : 'New request'}
           >
-            <section className="request-modal">
+            <section className="request-modal request-modal--wide">
               <header className="request-modal-header">
-                <h2>New Request Details</h2>
+                <h2>{editingId ? 'Edit Request' : 'New Request Details'}</h2>
                 <button
                   className="request-modal-close"
                   onClick={closeForm}
@@ -488,10 +760,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                 </button>
               </header>
 
-              <form
-                className="new-request-form"
-                onSubmit={handleAddNewRequest}
-              >
+              <form className="new-request-form" onSubmit={handleSave}>
                 <div className="form-group">
                   <label>Request Category</label>
                   <select
@@ -510,17 +779,42 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                 </div>
 
                 <div className="form-group">
-                  <label>Reason / Requirements</label>
+                  <label>Contact number</label>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    value={fields.contact}
+                    onChange={(e) => setField('contact', e.target.value)}
+                    placeholder="e.g. 09171234567"
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Reason for request</label>
                   <textarea
-                    rows={5}
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="Briefly explain why you need this assistance (e.g. crop affected by heavy rains, new planting season, etc.)"
+                    rows={3}
+                    value={fields.reason}
+                    onChange={(e) => setField('reason', e.target.value)}
+                    placeholder="e.g. My previous harvest was damaged by heavy rains"
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Additional details (optional)</label>
+                  <textarea
+                    rows={3}
+                    value={fields.additionalDetails}
+                    onChange={(e) =>
+                      setField('additionalDetails', e.target.value)
+                    }
+                    placeholder="Anything else the office should know"
                     disabled={saving}
                   />
                   <p className="form-hint">
-                    This will be included in your formal request letter to the
-                    Municipal Agriculture Office.
+                    All fields above will be compiled into your formal request
+                    letter.
                   </p>
                 </div>
 
@@ -534,6 +828,14 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                   <button
                     type="button"
                     className="cancel-btn"
+                    onClick={handlePreview}
+                    disabled={saving}
+                  >
+                    Preview letter
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-btn"
                     onClick={closeForm}
                     disabled={saving}
                   >
@@ -544,10 +846,129 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                     className="submit-btn"
                     disabled={saving}
                   >
-                    {saving ? 'Submitting…' : 'Submit'}
+                    {saving
+                      ? 'Saving…'
+                      : editingId
+                        ? 'Save changes'
+                        : 'Submit'}
                   </button>
                 </div>
               </form>
+            </section>
+          </div>
+        )}
+
+        {/* ---------- PREVIEW MODAL ---------- */}
+        {previewLetter && !showForm && !viewingRequest && (
+          <div
+            className="request-modal-backdrop"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setPreviewLetter(null);
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Letter preview"
+          >
+            <section className="request-modal request-modal--wide">
+              <header className="request-modal-header">
+                <h2>Request letter preview</h2>
+                <button
+                  className="request-modal-close"
+                  onClick={() => setPreviewLetter(null)}
+                  type="button"
+                  aria-label="Close"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </header>
+
+              <pre className="request-letter-preview">{previewLetter}</pre>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => setPreviewLetter(null)}
+                >
+                  Back to form
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* ---------- DETAIL (VIEW) MODAL ---------- */}
+        {viewingRequest && !showForm && !previewLetter && (
+          <div
+            className="request-modal-backdrop"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setViewingRequest(null);
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Request details"
+          >
+            <section className="request-modal request-modal--wide">
+              <header className="request-modal-header">
+                <div>
+                  <p className="request-detail-eyebrow">REQUEST</p>
+                  <h2>{viewingRequest.category}</h2>
+                </div>
+                <button
+                  className="request-modal-close"
+                  onClick={() => setViewingRequest(null)}
+                  type="button"
+                  aria-label="Close"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </header>
+
+              <div className="request-detail-meta">
+                <span className={`status-pill ${statusBadgeClass(viewingRequest.status)}`}>
+                  {viewingRequest.status}
+                </span>
+                <span className="request-detail-date">
+                  Submitted {formatShortDate(viewingRequest.createdAt)}
+                </span>
+              </div>
+
+              <div className="request-detail-block">
+                <h3>Formal request letter</h3>
+                <pre className="request-letter-preview">
+                  {viewingRequest.notes?.trim() || 'No letter content.'}
+                </pre>
+              </div>
+
+              {viewingRequest.adminNote && (
+                <div className="request-detail-block">
+                  <h3>Admin note</h3>
+                  <p>{viewingRequest.adminNote}</p>
+                </div>
+              )}
+
+              <div className="form-actions">
+                {viewingRequest.status === 'Pending' && (
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => openEditForm(viewingRequest)}
+                  >
+                    Edit request
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="submit-btn"
+                  onClick={() => setViewingRequest(null)}
+                >
+                  Close
+                </button>
+              </div>
             </section>
           </div>
         )}

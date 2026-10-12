@@ -103,7 +103,27 @@ export async function createAssistanceRequest(payload: {
   return rowToRequest(data as AssistanceRequestRow);
 }
 
-// NEW — delete a request (RLS limits this to the farmer's own Pending rows)
+// NEW — update a request (RLS limits this to the farmer's own Pending rows)
+export async function updateAssistanceRequest(
+  id: string,
+  payload: { category: AssistanceCategory; notes: string },
+): Promise<AssistanceRequestRecord> {
+  const { data, error } = await supabase
+    .from('assistance_requests')
+    .update({
+      category: payload.category,
+      notes: payload.notes.trim() || null,
+    })
+    .eq('id', id)
+    .select(
+      'id, farmer_id, category, notes, status, admin_note, created_at, updated_at',
+    )
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToRequest(data as AssistanceRequestRow);
+}
+
 export async function deleteAssistanceRequest(id: string): Promise<void> {
   const { error } = await supabase
     .from('assistance_requests')
