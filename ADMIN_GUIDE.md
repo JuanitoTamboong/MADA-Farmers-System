@@ -56,6 +56,10 @@ Use this page for issues submitted by farmers that need staff review and follow-
 - Treat a pest/disease AI result as a suggestion, not a confirmed diagnosis. A qualified person should review it before recommending treatment or issuing a public warning.
 - Link a report to its farmer and farm record. Group similar reports by location/crop to help staff notice possible wider problems.
 
+### Assistance Requests
+
+Farmers can submit assistance requests from the **Request** screen. After applying `supabase/assistance-requests.sql` to the Supabase project, new submissions are saved in `public.assistance_requests` with a **Pending** status. Admin accounts with the `admin` role can review all rows and update the status or admin note; farmers can only create and view their own requests. Use Supabase **Table Editor → assistance_requests** to review requests until an admin dashboard is implemented.
+
 ### Crops & Production
 
 Use this page to understand what farmers grow and how their farms are progressing. Put detailed crop and harvest records here; keep farmer-submitted problem reports in **Reports**, with links between the records.
@@ -136,4 +140,4 @@ Keep this page for the signed-in administrator's own settings and general system
 
 ## Current system limitations
 
-The current repository contains a farmer-facing front-end prototype and a visual admin prototype, not a working admin data system. Farmer/farm details and dashboard counts shown in the image are sample values. The farmer login does not verify credentials, and there is no backend or persistent database connecting farmer registrations, reports, requests, or crop records to admin pages. Treat displayed names, contact details, counts, locations, and report statuses as examples—not verified records. Use fictional sample data until secure authentication, authorization, and shared data storage are implemented.
+The repository does not include a separate working admin dashboard. Assistance requests can be stored and reviewed in Supabase after the setup SQL is applied, but the remaining farmer/farm details and dashboard counts may still be examples and other screens may not persist data. Supabase authentication and the `farmers.role` values must be configured correctly; requests should be reviewed only by authorized admin accounts. Treat sample names, contact details, counts, locations, and statuses as examples—not verified records.
