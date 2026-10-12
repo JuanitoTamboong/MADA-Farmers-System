@@ -515,7 +515,13 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     !!farmerProfile?.fullName?.trim() && !!farmerProfile?.barangay?.trim();
 
   return (
-    <PageLayout activeTab="Home" onNavigate={onNavigate} hideNav>
+    <PageLayout
+      activeTab="Home"
+      onNavigate={onNavigate}
+      hideNav
+      loading={loading || profileLoading}
+      loadingText="Loading your assistance requests..."
+    >
       <div className="assistance-container">
         <PageHeader
           title="Request"
@@ -542,10 +548,6 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
         )}
 
         <div className="request-card-box">
-          {loading && (
-            <p className="request-empty">Loading your requests…</p>
-          )}
-
           {!loading && error && !deleteTarget && (
             <p className="request-empty request-empty--error">{error}</p>
           )}
