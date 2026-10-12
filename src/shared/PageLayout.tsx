@@ -30,7 +30,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           className="scrollable-content"
           style={{
             paddingBottom: hideNav
-              ? "0px"
+              ? "env(safe-area-inset-bottom, 0px)"
               : "calc(64px + env(safe-area-inset-bottom, 0px))",
           }}
         >
