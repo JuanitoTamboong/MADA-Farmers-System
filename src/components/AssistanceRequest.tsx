@@ -332,6 +332,11 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     setPreviewLetter(null);
   }, [saving, farmerProfile?.contact]);
 
+  const returnToForm = useCallback(() => {
+    setPreviewLetter(null);
+    setShowForm(true);
+  }, []);
+
   // ---- close modal on Escape ----
   useEffect(() => {
     if (
@@ -348,7 +353,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
       } else if (deleteTarget && !deletingId) {
         setDeleteTarget(null);
         setError(null);
-      } else if (previewLetter) setPreviewLetter(null);
+      } else if (previewLetter) returnToForm();
       else if (viewingRequest) setViewingRequest(null);
       else if (showForm && !saving) closeForm();
     };
@@ -363,6 +368,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     successMessage,
     saving,
     closeForm,
+    returnToForm,
   ]);
 
   // ---- lock body scroll while any modal is open ----
@@ -489,6 +495,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
       return;
     }
     setPreviewLetter(letter);
+    setShowForm(false);
   };
 
   const handleDelete = async () => {
@@ -865,7 +872,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
           <div
             className="request-modal-backdrop"
             onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setPreviewLetter(null);
+              if (e.target === e.currentTarget) returnToForm();
             }}
             role="dialog"
             aria-modal="true"
@@ -876,7 +883,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                 <h2>Request letter preview</h2>
                 <button
                   className="request-modal-close"
-                  onClick={() => setPreviewLetter(null)}
+                  onClick={returnToForm}
                   type="button"
                   aria-label="Close"
                 >
@@ -892,7 +899,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setPreviewLetter(null)}
+                  onClick={returnToForm}
                 >
                   Back to form
                 </button>

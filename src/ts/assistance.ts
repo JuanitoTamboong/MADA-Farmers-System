@@ -140,40 +140,20 @@ export async function deleteAssistanceRequest(id: string): Promise<void> {
 export async function fetchFarmerProfileLite(
   farmerId: string,
 ): Promise<FarmerProfileLite | null> {
-  // First try with contact
-  const primary = await supabase
+  const { data, error } = await supabase
     .from('farmers')
-    .select('id, full_name, address, contact')
+    .select('id, full_name, address')
     .eq('id', farmerId)
     .maybeSingle();
 
-  // If 'contact' column doesn't exist, retry without it
-  if (primary.error && /contact/i.test(primary.error.message)) {
-    const retry = await supabase
-      .from('farmers')
-      .select('id, full_name, address')
-      .eq('id', farmerId)
-      .maybeSingle();
-
-    if (retry.error) throw new Error(retry.error.message);
-    if (!retry.data) return null;
-
-    return {
-      id: retry.data.id,
-      fullName: retry.data.full_name ?? '',
-      barangay: retry.data.address ?? '',
-      contact: '',
-    };
-  }
-
-  if (primary.error) throw new Error(primary.error.message);
-  if (!primary.data) return null;
+  if (error) throw new Error(error.message);
+  if (!data) return null;
 
   return {
-    id: primary.data.id,
-    fullName: primary.data.full_name ?? '',
-    barangay: primary.data.address ?? '',
-    contact: primary.data.contact ?? '',
+    id: data.id,
+    fullName: data.full_name ?? '',
+    barangay: data.address ?? '',
+    contact: '',
   };
 }
 
