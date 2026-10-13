@@ -184,6 +184,71 @@
   margin-top: 20px;
 }
 
+/* ============================================================
+   ✅ Message row wrapper + hover actions
+   ============================================================ */
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+}
+
+.message-row--sent {
+  justify-content: flex-end;
+}
+
+.message-row--sent .message-actions {
+  order: -1;
+}
+
+.message-row--received {
+  justify-content: flex-start;
+}
+
+.message-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.message-row:hover .message-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.message-action-btn {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.message-action-btn:hover {
+  background-color: #f3f4f6;
+  color: #1b4d2e;
+}
+
+.message-action-btn--danger:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* ============================================================
+   ✅ Message bubble (was .message-bubble — now nested in .message-row)
+   ============================================================ */
 .message-bubble {
   max-width: 80%;
   padding: 10px 14px;
@@ -195,15 +260,15 @@
   overflow-wrap: break-word;
 }
 
+/* Keep the alignment helpers, but they're now less important because
+   .message-row handles positioning. They still work for safety. */
 .message-sent {
-  align-self: flex-end;
   background-color: #1B4D2E;
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message-received {
-  align-self: flex-start;
   background-color: #ffffff;
   color: #1f2937;
   border: 1px solid #e5e7eb;
@@ -217,6 +282,170 @@
   opacity: 0.7;
   display: block;
   text-align: right;
+}
+
+/* ============================================================
+   ✅ Image inside a message bubble
+   ============================================================ */
+.message-image-link {
+  display: block;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.message-image {
+  display: block;
+  max-width: 200px;
+  max-height: 220px;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: zoom-in;
+  transition: opacity 0.15s;
+}
+
+.message-image:hover {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   ✅ Inline edit UI
+   ============================================================ */
+.message-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.message-edit-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.message-received .message-edit-input {
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.message-edit-input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.message-received .message-edit-input:focus {
+  border-color: #1b4d2e;
+}
+
+.message-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.message-edit-cancel,
+.message-edit-save {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.message-edit-cancel {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: inherit;
+}
+
+.message-received .message-edit-cancel {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.message-edit-save {
+  background-color: #ffffff;
+  color: #1b4d2e;
+}
+
+.message-received .message-edit-save {
+  background-color: #1b4d2e;
+  color: #ffffff;
+}
+
+.message-edit-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   ✅ Staged image preview (uploaded but NOT yet sent)
+   ============================================================ */
+.chat-staged-image {
+  position: relative;
+  display: flex;
+  padding: 8px 12px 0;
+  background-color: #ffffff;
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.chat-staged-image img {
+  display: block;
+  max-height: 72px;
+  max-width: 100px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  object-fit: cover;
+  background-color: #f9fafb;
+}
+
+.chat-staged-remove {
+  position: absolute;
+  top: 2px;
+  left: 104px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.chat-staged-remove:hover {
+  background-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.chat-staged-remove:active {
+  transform: scale(0.95);
+}
+
+/* Remove the double top border between staged image + input */
+.chat-staged-image + .chat-input-area {
+  border-top: none;
+  padding-top: 8px;
 }
 
 /* --- Input Area --- */
@@ -245,6 +474,34 @@
   background-color: #ffffff;
 }
 
+/* ============================================================
+   ✅ Attach button (distinct from the green Send button)
+   ============================================================ */
+.chat-attach-btn {
+  background-color: #f3f4f6 !important;
+  color: #1b4d2e !important;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.chat-attach-btn:hover:not(:disabled) {
+  background-color: #e5e7eb !important;
+}
+
+.chat-attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .chat-input-area button {
   background-color: #1B4D2E;
   color: white;
@@ -263,4 +520,96 @@
 .chat-input-area button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ============================================================
+   ✅ Delete confirmation modal
+   ============================================================ */
+.talk-delete-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: talkFadeIn 0.15s ease-out;
+}
+
+@keyframes talkFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.talk-delete-dialog {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  width: min(340px, calc(100vw - 40px));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: talkSlideUp 0.2s ease-out;
+}
+
+@keyframes talkSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.talk-delete-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.talk-delete-dialog p {
+  margin: 0 0 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.talk-delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.talk-delete-cancel,
+.talk-delete-confirm {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.talk-delete-cancel {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.talk-delete-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.talk-delete-confirm {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.talk-delete-confirm:hover {
+  background-color: #b91c1c;
+}
+
+/* ============================================================
+   ✅ Touch devices — keep hover actions always visible
+   ============================================================ */
+@media (hover: none) {
+  .message-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
