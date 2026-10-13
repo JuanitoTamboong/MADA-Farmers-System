@@ -158,8 +158,8 @@ function buildFormalRequest(
   const contact = fields.contact.trim() || farmer.contact?.trim() || '';
   const reason = fields.reason.trim();
 
-  // Require the reason — no silent fallback
-  if (!name || !barangay || !reason) return null;
+  // Require name and barangay. Reason is optional during edit.
+  if (!name || !barangay) return null;
 
   const today = formatLongDate(new Date());
   const additionalText = fields.additionalDetails.trim();
@@ -199,7 +199,7 @@ function buildFormalRequest(
     '',
     requestLine[category],
     '',
-    reason,
+    reason ? reason : '', // Only include reason if it exists
     additionalText,
     '',
     'I would highly appreciate your approval of this request. Kindly contact me at the number provided above so I can coordinate with your office regarding the required documents or schedule.',
@@ -330,6 +330,7 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     setFields({ ...blankFields, contact: farmerProfile?.contact ?? '' });
     setRequestTitle('Seeds');
     setPreviewLetter(null);
+    setError(null); 
   }, [saving, farmerProfile?.contact]);
 
   const returnToForm = useCallback(() => {
@@ -409,8 +410,8 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
     setRequestTitle(item.category);
     setFields({
       contact: farmerProfile?.contact ?? '',
-      reason: '',
-      additionalDetails: item.notes ?? '',
+      reason: '', // Leave empty so user can retype if needed
+      additionalDetails: '', // <--- FIX: Leave blank to prevent doubling
     });
     setError(null);
     setShowForm(true);
@@ -431,8 +432,8 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
       return;
     }
 
-    // Validate required fields before building the letter
-    if (!fields.reason.trim()) {
+    // FIX: Only validate the reason if we are creating a NEW request
+    if (!editingId && !fields.reason.trim()) {
       setError('Please fill in the reason for your request.');
       return;
     }
@@ -483,7 +484,8 @@ function AssistanceRequest({ onNavigate }: AssistanceRequestProps) {
   };
 
   const handlePreview = () => {
-    if (!fields.reason.trim()) {
+    // FIX: Only require the reason if we are creating a NEW request
+    if (!editingId && !fields.reason.trim()) {
       setError('Please fill in the reason for your request before previewing.');
       return;
     }
