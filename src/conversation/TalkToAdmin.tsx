@@ -6,7 +6,6 @@ import {
   Trash2,
   Pencil,
   X,
-  Camera,
 } from 'lucide-react';
 import { supabase } from '../supabase/supabase-client';
 import '../conversation/TalkToAdmin.css';
