@@ -18,6 +18,7 @@ import mayaBird from '../assets/images/mada-dashboard.png';
 import '../css/FarmerDashboard.css';
 import { supabase } from '../supabase/supabase-client';
 import { useFarmerProfile } from '../hooks/useFarmerProfile';
+import TalkToAdmin from '../conversation/TalkToAdmin';
 
 interface FarmerDashboardProps {
   onLogout?: () => void;
@@ -134,10 +135,8 @@ function guessGeoQuery(address: string): string {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  // Prefer the last part (usually province/region). Fall back to whole string.
   const candidate = parts[parts.length - 1] ?? address;
 
-  // Strip common PH prefixes that confuse the geocoder.
   return candidate
     .replace(/^(barangay|brgy\.?|brgy|purok|sitio)\s+/i, '')
     .trim();
@@ -368,7 +367,13 @@ function FarmerDashboard({ onLogout, onNavigate }: FarmerDashboardProps) {
   const firstName = profile.full_name.trim().split(/\s+/)[0];
 
   return (
-    <PageLayout activeTab="Home" onNavigate={onNavigate}>
+    <PageLayout
+      activeTab="Home"
+      onNavigate={onNavigate}
+      // TalkToAdmin rendered as overlay so it stays pinned inside the frame
+      // and does not scroll with the dashboard content.
+      overlay={profile.id ? <TalkToAdmin farmerId={profile.id} /> : null}
+    >
       <div className="dashboard-content">
         {/* HEADER */}
         <header className="dashboard-header">

@@ -12,6 +12,7 @@ interface PageLayoutProps {
   hideNav?: boolean;
   loading?: boolean;
   loadingText?: string;
+  overlay?: React.ReactNode; // <-- ADDED: for floating elements like chat bubbles
 }
 
 const PageLayout: React.FC<PageLayoutProps> = ({
@@ -22,6 +23,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   hideNav = false,
   loading = false,
   loadingText = "Loading...",
+  overlay, // <-- ADDED
 }) => {
   return (
     <main className="app-viewport">
@@ -36,6 +38,10 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         >
           {children}
         </div>
+
+        {/* Render overlay elements (e.g., TalkToAdmin chat bubble) 
+            inside the phone frame but above the scrollable content */}
+        {overlay}
 
         {!hideNav && <BottomNav activeTab={activeTab} onNavigate={onNavigate} />}
 
