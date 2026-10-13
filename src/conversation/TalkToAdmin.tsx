@@ -1,12 +1,6 @@
 // src/conversation/TalkToAdmin.tsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  Send,
-  ImagePlus,
-  Trash2,
-  Pencil,
-  X,
-} from 'lucide-react';
+import { Send, ImagePlus, Trash2, Pencil, X } from 'lucide-react';
 import { supabase } from '../supabase/supabase-client';
 import '../conversation/TalkToAdmin.css';
 import talkToAdminIcon from '../assets/images/talktoadmin.png';
@@ -170,10 +164,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
         // Mark admin→farmer messages as read
         const unreadIds = rows
-          .filter(
-            (m) =>
-              m.receiver_id === farmerId && m.read_at === null,
-          )
+          .filter((m) => m.receiver_id === farmerId && m.read_at === null)
           .map((m) => m.id);
 
         if (unreadIds.length > 0) {
@@ -323,23 +314,27 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
       // Upload image first (if any)
       if (imageToSend) {
         const ext = imageToSend.file.name.split('.').pop() || 'jpg';
-        imagePath = `${farmerId}/${Date.now()}-${Math.random()
+        const path = `${farmerId}/${Date.now()}-${Math.random()
           .toString(36)
           .slice(2, 8)}.${ext}`;
 
         const { error: uploadError } = await supabase.storage
           .from(CHAT_IMAGE_BUCKET)
-          .upload(imagePath, imageToSend.file, {
+          .upload(path, imageToSend.file, {
             upsert: false,
             contentType: imageToSend.file.type,
           });
 
         if (uploadError) throw uploadError;
 
-        const urls = await signPaths(CHAT_IMAGE_BUCKET, [imagePath]);
-        if (urls[imagePath]) {
-          setImageUrls((prev) => ({ ...prev, [imagePath!]: urls[imagePath] }));
+        // Sign it for immediate display
+        const urls = await signPaths(CHAT_IMAGE_BUCKET, [path]);
+        const signedUrl = urls[path];
+        if (signedUrl) {
+          setImageUrls((prev) => ({ ...prev, [path]: signedUrl }));
         }
+
+        imagePath = path;
       }
 
       const payload = {
@@ -668,9 +663,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
             <input
               type="text"
               placeholder={
-                uploading
-                  ? 'Uploading image…'
-                  : 'Type your message…'
+                uploading ? 'Uploading image…' : 'Type your message…'
               }
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
