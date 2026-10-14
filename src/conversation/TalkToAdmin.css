@@ -21,7 +21,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: #1B4D2E; /* Brand green */
+  background-color: #1B4D2E;
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -32,12 +32,9 @@
   transition: transform 0.2s ease, opacity 0.2s ease;
   position: relative;
   flex-shrink: 0;
-  /* No overflow: hidden — we want the SVG icon to render fully */
 }
 
-.chat-bubble-btn:hover {
-  transform: scale(1.05);
-}
+.chat-bubble-btn:hover { transform: scale(1.05); }
 
 .chat-bubble-btn--hidden {
   opacity: 0;
@@ -103,7 +100,6 @@
   min-width: 0;
 }
 
-/* --- Admin Avatar (holds the bird image) --- */
 .admin-avatar {
   width: 32px;
   height: 32px;
@@ -116,7 +112,7 @@
   font-weight: bold;
   font-size: 14px;
   flex-shrink: 0;
-  overflow: hidden; /* Crop image to circle */
+  overflow: hidden;
 }
 
 .admin-avatar img {
@@ -144,9 +140,7 @@
   margin-right: 4px;
 }
 
-/* ============================================================
-   ✅ FIX: Chat header actions wrapper (delete-all + close)
-   ============================================================ */
+/* ---- Header actions ---- */
 .chat-header-actions {
   display: flex;
   align-items: center;
@@ -159,10 +153,11 @@
   border: none;
   color: white;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   display: flex;
   align-items: center;
-  opacity: 0.8;
+  justify-content: center;
+  opacity: 0.85;
   flex-shrink: 0;
   border-radius: 6px;
   transition: opacity 0.15s ease, background-color 0.15s ease;
@@ -173,31 +168,26 @@
   background-color: rgba(255, 255, 255, 0.12);
 }
 
-/* ============================================================
-   ✅ FIX: Delete-entire-conversation button (trash in header)
-   ============================================================ */
+/* Delete-all button — inline styles in TSX also set most of this */
 .chat-delete-all-btn {
-  background: none;
-  border: none;
   color: #ffffff;
-  cursor: pointer;
-  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.8;
   flex-shrink: 0;
-  border-radius: 6px;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.chat-delete-all-btn svg {
+  stroke: #ffffff;
+  display: block;
 }
 
 .chat-delete-all-btn:hover:not(:disabled) {
-  opacity: 1;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(239, 68, 68, 0.85) !important;
 }
 
 .chat-delete-all-btn:disabled {
-  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -227,28 +217,20 @@
   margin-top: 20px;
 }
 
-/* ============================================================
-   ✅ Message row wrapper + hover actions
-   ============================================================ */
+/* ---- Message rows ---- */
 .message-row {
   display: flex;
   align-items: flex-end;
   gap: 6px;
   width: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.message-row--sent {
-  justify-content: flex-end;
-}
+.message-row--sent { justify-content: flex-end; }
+.message-row--sent .message-actions { order: -1; }
+.message-row--received { justify-content: flex-start; }
 
-.message-row--sent .message-actions {
-  order: -1;
-}
-
-.message-row--received {
-  justify-content: flex-start;
-}
-
+/* Actions: hidden by default */
 .message-actions {
   display: flex;
   gap: 2px;
@@ -258,7 +240,9 @@
   flex-shrink: 0;
 }
 
-.message-row:hover .message-actions {
+/* Desktop hover OR mobile tap (active class) reveals */
+.message-row:hover .message-actions,
+.message-row.message-row--active .message-actions {
   opacity: 1;
   pointer-events: auto;
 }
@@ -289,9 +273,7 @@
   color: #dc2626;
 }
 
-/* ============================================================
-   ✅ Message bubble
-   ============================================================ */
+/* ---- Bubbles ---- */
 .message-bubble {
   max-width: 80%;
   padding: 10px 14px;
@@ -325,9 +307,7 @@
   text-align: right;
 }
 
-/* ============================================================
-   ✅ Image inside a message bubble
-   ============================================================ */
+/* ---- Images ---- */
 .message-image-link {
   display: block;
   margin-bottom: 6px;
@@ -347,13 +327,9 @@
   transition: opacity 0.15s;
 }
 
-.message-image:hover {
-  opacity: 0.9;
-}
+.message-image:hover { opacity: 0.9; }
 
-/* ============================================================
-   ✅ Inline edit UI
-   ============================================================ */
+/* ---- Edit UI ---- */
 .message-edit {
   display: flex;
   flex-direction: column;
@@ -381,13 +357,8 @@
   color: #1f2937;
 }
 
-.message-edit-input:focus {
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.message-received .message-edit-input:focus {
-  border-color: #1b4d2e;
-}
+.message-edit-input:focus { border-color: rgba(255, 255, 255, 0.5); }
+.message-received .message-edit-input:focus { border-color: #1b4d2e; }
 
 .message-edit-actions {
   display: flex;
@@ -431,9 +402,7 @@
   cursor: not-allowed;
 }
 
-/* ============================================================
-   ✅ Staged image preview (uploaded but NOT yet sent)
-   ============================================================ */
+/* ---- Staged image ---- */
 .chat-staged-image {
   position: relative;
   display: flex;
@@ -479,17 +448,14 @@
   transform: scale(1.05);
 }
 
-.chat-staged-remove:active {
-  transform: scale(0.95);
-}
+.chat-staged-remove:active { transform: scale(0.95); }
 
-/* Remove the double top border between staged image + input */
 .chat-staged-image + .chat-input-area {
   border-top: none;
   padding-top: 8px;
 }
 
-/* --- Input Area --- */
+/* ---- Input area ---- */
 .chat-input-area {
   display: flex;
   padding: 10px;
@@ -515,9 +481,6 @@
   background-color: #ffffff;
 }
 
-/* ============================================================
-   ✅ Attach button (distinct from the green Send button)
-   ============================================================ */
 .chat-attach-btn {
   background-color: #f3f4f6 !important;
   color: #1b4d2e !important;
@@ -563,9 +526,7 @@
   cursor: not-allowed;
 }
 
-/* ============================================================
-   ✅ Delete confirmation modal
-   ============================================================ */
+/* ---- Delete modal ---- */
 .talk-delete-overlay {
   position: fixed;
   inset: 0;
@@ -632,31 +593,17 @@
   color: #374151;
 }
 
-.talk-delete-cancel:hover {
-  background-color: #e5e7eb;
-}
+.talk-delete-cancel:hover { background-color: #e5e7eb; }
 
 .talk-delete-confirm {
   background-color: #dc2626;
   color: #ffffff;
 }
 
-.talk-delete-confirm:hover {
-  background-color: #b91c1c;
-}
+.talk-delete-confirm:hover { background-color: #b91c1c; }
 
 .talk-delete-confirm:disabled,
 .talk-delete-cancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* ============================================================
-   ✅ Touch devices — keep hover actions always visible
-   ============================================================ */
-@media (hover: none) {
-  .message-actions {
-    opacity: 1;
-    pointer-events: auto;
-  }
 }
