@@ -144,6 +144,16 @@
   margin-right: 4px;
 }
 
+/* ============================================================
+   ✅ FIX: Chat header actions wrapper (delete-all + close)
+   ============================================================ */
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .chat-close-btn {
   background: none;
   border: none;
@@ -154,9 +164,42 @@
   align-items: center;
   opacity: 0.8;
   flex-shrink: 0;
+  border-radius: 6px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
 }
 
-.chat-close-btn:hover { opacity: 1; }
+.chat-close-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================
+   ✅ FIX: Delete-entire-conversation button (trash in header)
+   ============================================================ */
+.chat-delete-all-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.chat-delete-all-btn:hover:not(:disabled) {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.chat-delete-all-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 
 /* --- Messages Area --- */
 .chat-messages {
@@ -247,7 +290,7 @@
 }
 
 /* ============================================================
-   ✅ Message bubble (was .message-bubble — now nested in .message-row)
+   ✅ Message bubble
    ============================================================ */
 .message-bubble {
   max-width: 80%;
@@ -260,8 +303,6 @@
   overflow-wrap: break-word;
 }
 
-/* Keep the alignment helpers, but they're now less important because
-   .message-row handles positioning. They still work for safety. */
 .message-sent {
   background-color: #1B4D2E;
   color: white;
@@ -602,6 +643,12 @@
 
 .talk-delete-confirm:hover {
   background-color: #b91c1c;
+}
+
+.talk-delete-confirm:disabled,
+.talk-delete-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ============================================================
