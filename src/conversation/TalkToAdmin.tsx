@@ -4,6 +4,7 @@ import { Send, ImagePlus, Trash2, Pencil, X } from 'lucide-react';
 import { supabase } from '../supabase/supabase-client';
 import '../conversation/TalkToAdmin.css';
 import talkToAdminIcon from '../assets/images/talktoadmin.png';
+import DeleteMessage from '../assets/images/maya-bird-delete.png';
 
 // ---------- Types ----------
 
@@ -84,7 +85,6 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
 
-  // Tap-to-reveal for mobile message actions
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -523,7 +523,6 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
             </div>
 
             <div className="chat-header-actions">
-              {/* Delete-all — inline styles so it's always visible */}
               <button
                 type="button"
                 className="chat-delete-all-btn"
@@ -786,6 +785,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         </svg>
       </button>
 
+      {/* ============ Delete this message confirm — WITH MAYA BIRD ICON ============ */}
       {deletingMessageId && (
         <div
           className="talk-delete-overlay"
@@ -794,6 +794,9 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
           }}
         >
           <div className="talk-delete-dialog" role="alertdialog">
+            <div className="talk-delete-icon">
+              <img src={DeleteMessage} alt="" aria-hidden="true" />
+            </div>
             <h3>Delete this message?</h3>
             <p>This message will be permanently deleted.</p>
             <div className="talk-delete-actions">
@@ -816,6 +819,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         </div>
       )}
 
+      {/* ============ Delete entire conversation confirm — WITH MAYA BIRD ICON ============ */}
       {showDeleteAllConfirm && (
         <div
           className="talk-delete-overlay"
@@ -826,6 +830,9 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
           }}
         >
           <div className="talk-delete-dialog" role="alertdialog">
+            <div className="talk-delete-icon">
+              <img src={DeleteMessage} alt="" aria-hidden="true" />
+            </div>
             <h3>Delete entire conversation?</h3>
             <p>
               All messages between you and the admin will be permanently
