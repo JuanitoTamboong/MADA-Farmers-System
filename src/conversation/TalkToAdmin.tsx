@@ -1,4 +1,5 @@
-// src/conversation/TalkToAdmin.tsx
+
+ // src/conversation/TalkToAdmin.tsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Send, ImagePlus, Trash2, Pencil, X } from 'lucide-react';
 import { supabase } from '../supabase/supabase-client';
@@ -23,10 +24,16 @@ interface TalkToAdminProps {
   adminId?: string;
 }
 
+interface AdminPresence {
+  user_id?: string;
+  online_at?: string;
+}
+
 // ---------- Constants ----------
 
 const CHAT_IMAGE_BUCKET = 'chat-images';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const PRESENCE_CHANNEL = 'online-admins';
 
 const FALLBACK_ADMIN_ID = import.meta.env.VITE_DEFAULT_ADMIN_ID as
   | string
@@ -45,12 +52,19 @@ async function signPaths(
     .from(bucket)
     .createSignedUrls(uniq, 60 * 60);
 
-  if (error || !data) return {};
+  if (error || !data) {
+    console.error('Could not create signed image URLs:', error);
+    return {};
+  }
 
   const map: Record<string, string> = {};
+
   for (const row of data) {
-    if (row.path && row.signedUrl) map[row.path] = row.signedUrl;
+    if (row.path && row.signedUrl) {
+      map[row.path] = row.signedUrl;
+    }
   }
+
   return map;
 }
 
@@ -58,13 +72,19 @@ function makeTempId(): string {
   return `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
+// ---------- Component ----------
+
+export default function TalkToAdmin({
+  farmerId,
+  adminId,
+}: TalkToAdminProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+
   const [resolvedAdminId, setResolvedAdminId] = useState<string | null>(
     adminId ?? FALLBACK_ADMIN_ID ?? null,
   );
@@ -84,8 +104,10 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
-
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+
+  // Admin online status
+  const [adminOnline, setAdminOnline] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,12 +119,17 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
     [resolvedAdminId],
   );
 
-  // ---- Resolve admin ----
+  // ---------- Resolve admin ----------
+
   useEffect(() => {
-    if (resolvedAdminId) return;
+    if (adminId || FALLBACK_ADMIN_ID) {
+      setResolvedAdminId(adminId ?? FALLBACK_ADMIN_ID ?? null);
+      return;
+    }
+
     let cancelled = false;
 
-    (async () => {
+    const resolveAdmin = async () => {
       const { data, error } = await supabase
         .from('farmers')
         .select('id')
@@ -111,26 +138,85 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         .maybeSingle();
 
       if (cancelled) return;
+
       if (error) {
         console.error('Could not resolve admin:', error);
         return;
       }
-      if (data?.id) setResolvedAdminId(data.id);
-    })();
+
+      if (data?.id) {
+        setResolvedAdminId(data.id);
+      }
+    };
+
+    void resolveAdmin();
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedAdminId]);
+  }, [adminId]);
 
-  // ---- Auto-scroll ----
+  // ---------- Admin online presence ----------
+
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!activeAdminId) {
+      setAdminOnline(false);
+      return;
     }
+
+    let cancelled = false;
+
+    // Listen to the shared channel. The farmer does not publish presence here.
+    const presenceChannel = supabase.channel(PRESENCE_CHANNEL);
+
+    const updateAdminStatus = () => {
+      const state = presenceChannel.presenceState();
+
+      const online = Object.values(state)
+        .flat()
+        .some((entry) => {
+          const presence = entry as AdminPresence;
+          return presence.user_id === activeAdminId;
+        });
+
+      if (!cancelled) {
+        setAdminOnline(online);
+      }
+    };
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, updateAdminStatus)
+      .on('presence', { event: 'join' }, updateAdminStatus)
+      .on('presence', { event: 'leave' }, updateAdminStatus)
+      .subscribe((status) => {
+        if (cancelled) return;
+
+        if (status === 'SUBSCRIBED') {
+          updateAdminStatus();
+        } else if (
+          status === 'CHANNEL_ERROR' ||
+          status === 'TIMED_OUT' ||
+          status === 'CLOSED'
+        ) {
+          setAdminOnline(false);
+          console.error('Admin presence connection status:', status);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(presenceChannel);
+    };
+  }, [activeAdminId]);
+
+  // ---------- Auto-scroll ----------
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  // ---- Load + subscribe ----
+  // ---------- Load and subscribe to messages ----------
+
   useEffect(() => {
     if (!isOpen || !farmerId || !activeAdminId) return;
 
@@ -138,6 +224,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
     const fetchMessages = async () => {
       setLoading(true);
+
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -150,31 +237,51 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
       if (error) {
         console.error('Error fetching messages:', error);
-      } else {
-        const rows = data ?? [];
-        setMessages(rows);
+        setLoading(false);
+        return;
+      }
 
-        const paths = rows.map((m) => m.image_path ?? '').filter(Boolean);
-        if (paths.length > 0) {
-          const urls = await signPaths(CHAT_IMAGE_BUCKET, paths);
-          if (!cancelled) setImageUrls((prev) => ({ ...prev, ...urls }));
-        }
+      const rows = (data ?? []) as Message[];
+      setMessages(rows);
 
-        const unreadIds = rows
-          .filter((m) => m.receiver_id === farmerId && m.read_at === null)
-          .map((m) => m.id);
+      const paths = rows
+        .map((message) => message.image_path ?? '')
+        .filter(Boolean);
 
-        if (unreadIds.length > 0) {
-          await supabase
-            .from('messages')
-            .update({ read_at: new Date().toISOString() })
-            .in('id', unreadIds);
+      if (paths.length > 0) {
+        const urls = await signPaths(CHAT_IMAGE_BUCKET, paths);
+
+        if (!cancelled) {
+          setImageUrls((previous) => ({ ...previous, ...urls }));
         }
       }
-      setLoading(false);
+
+      if (cancelled) return;
+
+      const unreadIds = rows
+        .filter(
+          (message) =>
+            message.receiver_id === farmerId && message.read_at === null,
+        )
+        .map((message) => message.id);
+
+      if (unreadIds.length > 0) {
+        const { error: readError } = await supabase
+          .from('messages')
+          .update({ read_at: new Date().toISOString() })
+          .in('id', unreadIds);
+
+        if (readError) {
+          console.error('Could not mark messages as read:', readError);
+        }
+      }
+
+      if (!cancelled) {
+        setLoading(false);
+      }
     };
 
-    fetchMessages();
+    void fetchMessages();
 
     const subscription = supabase
       .channel(`messages-${farmerId}-${activeAdminId}`)
@@ -193,89 +300,127 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
           if (!belongsToThisChat) return;
 
           if (incoming.image_path) {
-            setImageUrls((prev) => {
-              if (prev[incoming.image_path!]) return prev;
-              signPaths(CHAT_IMAGE_BUCKET, [incoming.image_path!]).then(
-                (urls) => setImageUrls((p) => ({ ...p, ...urls })),
-              );
-              return prev;
+            const path = incoming.image_path;
+
+            setImageUrls((previous) => {
+              if (previous[path]) return previous;
+
+              void signPaths(CHAT_IMAGE_BUCKET, [path]).then((urls) => {
+                if (urls[path]) {
+                  setImageUrls((current) => ({
+                    ...current,
+                    ...urls,
+                  }));
+                }
+              });
+
+              return previous;
             });
           }
 
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === incoming.id)) return prev;
+          setMessages((previous) => {
+            if (previous.some((message) => message.id === incoming.id)) {
+              return previous;
+            }
 
-            const tempIds = pendingTempIdsRef.current;
-            const temp = prev.find(
-              (m) =>
-                tempIds.has(m.id) &&
-                m.sender_id === incoming.sender_id &&
-                m.receiver_id === incoming.receiver_id &&
-                (m.content || '') === (incoming.content || '') &&
-                (m.image_path ?? null) === (incoming.image_path ?? null),
+            const temp = previous.find(
+              (message) =>
+                pendingTempIdsRef.current.has(message.id) &&
+                message.sender_id === incoming.sender_id &&
+                message.receiver_id === incoming.receiver_id &&
+                (message.content || '') === (incoming.content || '') &&
+                (message.image_path ?? null) ===
+                  (incoming.image_path ?? null),
             );
 
             if (temp) {
-              tempIds.delete(temp.id);
-              return prev.map((m) => (m.id === temp.id ? incoming : m));
+              pendingTempIdsRef.current.delete(temp.id);
+
+              return previous.map((message) =>
+                message.id === temp.id ? incoming : message,
+              );
             }
-            return [...prev, incoming];
+
+            return [...previous, incoming];
           });
 
-          if (incoming.receiver_id === farmerId && incoming.read_at === null) {
-            supabase
+          if (
+            incoming.receiver_id === farmerId &&
+            incoming.read_at === null
+          ) {
+            void supabase
               .from('messages')
               .update({ read_at: new Date().toISOString() })
-              .eq('id', incoming.id)
-              .then(() => {});
+              .eq('id', incoming.id);
           }
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (
+          status === 'CHANNEL_ERROR' ||
+          status === 'TIMED_OUT' ||
+          status === 'CLOSED'
+        ) {
+          console.error('Message subscription status:', status);
+        }
+      });
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(subscription);
+      void supabase.removeChannel(subscription);
     };
   }, [isOpen, farmerId, activeAdminId]);
 
-  // ---- Image picker ----
-  const handleImagePick = () => fileInputRef.current?.click();
+  // ---------- Image picker ----------
 
-  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
+  const handleImagePick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageSelected = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
 
     if (!file) return;
+
     if (!file.type.startsWith('image/')) {
       alert('Please choose an image file.');
       return;
     }
+
     if (file.size > MAX_IMAGE_BYTES) {
       alert('Image must be smaller than 5 MB.');
       return;
     }
 
-    if (pendingImage) URL.revokeObjectURL(pendingImage.previewUrl);
+    if (pendingImage) {
+      URL.revokeObjectURL(pendingImage.previewUrl);
+    }
 
     const previewUrl = URL.createObjectURL(file);
     setPendingImage({ file, previewUrl });
   };
 
   const clearPendingImage = () => {
-    if (pendingImage) URL.revokeObjectURL(pendingImage.previewUrl);
+    if (pendingImage) {
+      URL.revokeObjectURL(pendingImage.previewUrl);
+    }
+
     setPendingImage(null);
   };
 
-  // ---- Send ----
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // ---------- Send message ----------
+
+  const handleSend = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     if (sendingRef.current) return;
     sendingRef.current = true;
 
     const trimmed = newMessage.trim();
-    const hasImage = !!pendingImage;
+    const hasImage = Boolean(pendingImage);
 
     if ((!trimmed && !hasImage) || !farmerId) {
       sendingRef.current = false;
@@ -283,11 +428,14 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
     }
 
     const targetAdminId = activeAdminId;
+
     if (!targetAdminId) {
       sendingRef.current = false;
+
       alert(
         'No admin is configured yet. Please contact the system administrator.',
       );
+
       return;
     }
 
@@ -295,16 +443,21 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
     const imageToSend = pendingImage;
 
     setSending(true);
-    setUploading(!!imageToSend);
+    setUploading(Boolean(imageToSend));
     setNewMessage('');
     setPendingImage(null);
-    if (imageToSend) URL.revokeObjectURL(imageToSend.previewUrl);
+
+    if (imageToSend) {
+      URL.revokeObjectURL(imageToSend.previewUrl);
+    }
 
     let imagePath: string | null = null;
+    let tempId: string | null = null;
 
     try {
       if (imageToSend) {
         const ext = imageToSend.file.name.split('.').pop() || 'jpg';
+
         const path = `${farmerId}/${Date.now()}-${Math.random()
           .toString(36)
           .slice(2, 8)}.${ext}`;
@@ -318,13 +471,16 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
         if (uploadError) throw uploadError;
 
-        const urls = await signPaths(CHAT_IMAGE_BUCKET, [path]);
-        const signedUrl = urls[path];
-        if (signedUrl) {
-          setImageUrls((prev) => ({ ...prev, [path]: signedUrl }));
-        }
-
         imagePath = path;
+
+        const urls = await signPaths(CHAT_IMAGE_BUCKET, [path]);
+
+        if (urls[path]) {
+          setImageUrls((previous) => ({
+            ...previous,
+            [path]: urls[path],
+          }));
+        }
       }
 
       const payload = {
@@ -334,7 +490,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         image_path: imagePath,
       };
 
-      const tempId = makeTempId();
+      tempId = makeTempId();
       pendingTempIdsRef.current.add(tempId);
 
       const optimistic: Message = {
@@ -344,7 +500,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         read_at: null,
       };
 
-      setMessages((prev) => [...prev, optimistic]);
+      setMessages((previous) => [...previous, optimistic]);
 
       const { data: inserted, error } = await supabase
         .from('messages')
@@ -355,25 +511,36 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
       if (error) throw error;
 
       if (inserted) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === inserted.id)) {
-            return prev.filter((m) => m.id !== tempId);
+        const insertedMessage = inserted as Message;
+
+        setMessages((previous) => {
+          if (previous.some((message) => message.id === insertedMessage.id)) {
+            return previous.filter((message) => message.id !== tempId);
           }
-          return prev.map((m) => (m.id === tempId ? inserted : m));
+
+          return previous.map((message) =>
+            message.id === tempId ? insertedMessage : message,
+          );
         });
+
         pendingTempIdsRef.current.delete(tempId);
       }
-    } catch (err) {
-      console.error('Error sending message:', err);
+    } catch (error) {
+      console.error('Error sending message:', error);
+
+      if (tempId) {
+        pendingTempIdsRef.current.delete(tempId);
+
+        setMessages((previous) =>
+          previous.filter((message) => message.id !== tempId),
+        );
+      }
+
       alert(
         `Failed to send message.\n\n${
-          err instanceof Error ? err.message : 'Unknown error'
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
-      setMessages((prev) =>
-        prev.filter((m) => !pendingTempIdsRef.current.has(m.id)),
-      );
-      pendingTempIdsRef.current.clear();
     } finally {
       sendingRef.current = false;
       setSending(false);
@@ -381,13 +548,15 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
     }
   };
 
-  // ---- Edit ----
-  const startEdit = (msg: Message) => {
-    if (msg.sender_id !== farmerId) return;
-    if (msg.image_path) return;
-    if (msg.id.startsWith('temp-')) return;
-    setEditingId(msg.id);
-    setEditContent(msg.content);
+  // ---------- Edit message ----------
+
+  const startEdit = (message: Message) => {
+    if (message.sender_id !== farmerId) return;
+    if (message.image_path) return;
+    if (message.id.startsWith('temp-')) return;
+
+    setEditingId(message.id);
+    setEditContent(message.content);
   };
 
   const cancelEdit = () => {
@@ -400,62 +569,81 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
 
     const id = editingId;
     const nextContent = editContent.trim();
-    const previous = messages;
+    const previousMessages = messages;
 
-    setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, content: nextContent } : m)),
+    setMessages((previous) =>
+      previous.map((message) =>
+        message.id === id
+          ? { ...message, content: nextContent }
+          : message,
+      ),
     );
+
     setEditingId(null);
     setEditContent('');
 
     const { error } = await supabase
       .from('messages')
       .update({ content: nextContent })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('sender_id', farmerId);
 
     if (error) {
       console.error('Error editing message:', error);
-      setMessages(previous);
+      setMessages(previousMessages);
       alert(`Failed to edit message.\n\n${error.message}`);
     }
   };
 
-  // ---- Delete single ----
+  // ---------- Delete one message ----------
+
   const confirmDeleteMessage = async () => {
     if (!deletingMessageId) return;
 
     const id = deletingMessageId;
-    const previous = messages;
-    const target = previous.find((m) => m.id === id);
+    const previousMessages = messages;
+    const target = previousMessages.find((message) => message.id === id);
 
     setDeletingMessageId(null);
-    setMessages((prev) => prev.filter((m) => m.id !== id));
 
-    const { error } = await supabase.from('messages').delete().eq('id', id);
+    setMessages((previous) =>
+      previous.filter((message) => message.id !== id),
+    );
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', id)
+      .eq('sender_id', farmerId);
 
     if (error) {
       console.error('Error deleting message:', error);
-      setMessages(previous);
+      setMessages(previousMessages);
       alert(`Failed to delete message.\n\n${error.message}`);
       return;
     }
 
     if (target?.image_path) {
-      await supabase.storage
+      const { error: storageError } = await supabase.storage
         .from(CHAT_IMAGE_BUCKET)
         .remove([target.image_path]);
-      setImageUrls((prev) => {
-        const next = { ...prev };
+
+      if (storageError) {
+        console.warn('Could not delete the image:', storageError);
+      }
+
+      setImageUrls((previous) => {
+        const next = { ...previous };
         delete next[target.image_path!];
         return next;
       });
     }
   };
 
-  // ---- Delete all ----
+  // ---------- Delete entire conversation ----------
+
   const confirmDeleteAll = async () => {
-    if (!farmerId || !activeAdminId) return;
-    if (deletingAll) return;
+    if (!farmerId || !activeAdminId || deletingAll) return;
 
     setDeletingAll(true);
 
@@ -463,8 +651,8 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
     const previousImageUrls = imageUrls;
 
     const imagePaths = previousMessages
-      .map((m) => m.image_path)
-      .filter((p): p is string => !!p);
+      .map((message) => message.image_path)
+      .filter((path): path is string => Boolean(path));
 
     setMessages([]);
     setImageUrls({});
@@ -490,22 +678,29 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
           .remove(imagePaths);
 
         if (storageError) {
-          console.warn('Some chat images could not be deleted:', storageError);
+          console.warn(
+            'Some chat images could not be deleted:',
+            storageError,
+          );
         }
       }
-    } catch (err) {
-      console.error('Error deleting conversation:', err);
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+
       setMessages(previousMessages);
       setImageUrls(previousImageUrls);
+
       alert(
         `Failed to delete conversation.\n\n${
-          err instanceof Error ? err.message : 'Unknown error'
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     } finally {
       setDeletingAll(false);
     }
   };
+
+  // ---------- UI ----------
 
   return (
     <div className="talk-to-admin-container">
@@ -516,9 +711,23 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
               <div className="admin-avatar">
                 <img src={talkToAdminIcon} alt="" aria-hidden="true" />
               </div>
+
               <div>
                 <h3>Talk to Admin</h3>
-                <span className="status-dot"></span> Messages are saved
+
+                <div className="admin-presence-status" aria-live="polite">
+                  <span
+                    className={`status-dot ${
+                      adminOnline
+                        ? 'status-dot--online'
+                        : 'status-dot--offline'
+                    }`}
+                  />
+
+                  <span>
+                    {adminOnline ? 'Admin is online' : 'Admin is offline'}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -543,7 +752,8 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                     messages.length === 0 || deletingAll
                       ? 'not-allowed'
                       : 'pointer',
-                  opacity: messages.length === 0 || deletingAll ? 0.5 : 1,
+                  opacity:
+                    messages.length === 0 || deletingAll ? 0.5 : 1,
                 }}
               >
                 <Trash2 size={16} color="#ffffff" />
@@ -578,28 +788,33 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                 No messages yet. Start a conversation!
               </p>
             ) : (
-              messages.map((msg) => {
-                const isFarmer = msg.sender_id === farmerId;
-                const imgUrl = msg.image_path
-                  ? imageUrls[msg.image_path]
-                  : null;
-                const isEditing = editingId === msg.id;
-                const isPending = msg.id.startsWith('temp-');
-                const isActive = activeMessageId === msg.id;
+              messages.map((message) => {
+                const isFarmer = message.sender_id === farmerId;
 
-                const canEdit = isFarmer && !msg.image_path && !isPending;
+                const imgUrl = message.image_path
+                  ? imageUrls[message.image_path]
+                  : null;
+
+                const isEditing = editingId === message.id;
+                const isPending = message.id.startsWith('temp-');
+                const isActive = activeMessageId === message.id;
+
+                const canEdit =
+                  isFarmer && !message.image_path && !isPending;
+
                 const canDelete = isFarmer && !isPending;
                 const showActions = (canEdit || canDelete) && !isEditing;
 
                 return (
                   <div
-                    key={msg.id}
+                    key={message.id}
                     className={`message-row ${
                       isFarmer ? 'message-row--sent' : 'message-row--received'
                     } ${isActive ? 'message-row--active' : ''}`}
                     onClick={() => {
                       if (!showActions) return;
-                      setActiveMessageId(isActive ? null : msg.id);
+
+                      setActiveMessageId(isActive ? null : message.id);
                     }}
                   >
                     {showActions && (
@@ -608,9 +823,9 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                           <button
                             type="button"
                             className="message-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEdit(msg);
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              startEdit(message);
                             }}
                             aria-label="Edit message"
                             title="Edit"
@@ -618,13 +833,14 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                             <Pencil size={12} />
                           </button>
                         )}
+
                         {canDelete && (
                           <button
                             type="button"
                             className="message-action-btn message-action-btn--danger"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingMessageId(msg.id);
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDeletingMessageId(message.id);
                             }}
                             aria-label="Delete message"
                             title="Delete"
@@ -646,7 +862,7 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="message-image-link"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(event) => event.stopPropagation()}
                         >
                           <img
                             src={imgUrl}
@@ -661,17 +877,26 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                           <textarea
                             className="message-edit-input"
                             value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                saveEdit();
+                            onChange={(event) =>
+                              setEditContent(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                              if (
+                                event.key === 'Enter' &&
+                                !event.shiftKey
+                              ) {
+                                event.preventDefault();
+                                void saveEdit();
                               }
-                              if (e.key === 'Escape') cancelEdit();
+
+                              if (event.key === 'Escape') {
+                                cancelEdit();
+                              }
                             }}
                             autoFocus
                             rows={2}
                           />
+
                           <div className="message-edit-actions">
                             <button
                               type="button"
@@ -680,10 +905,11 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                             >
                               Cancel
                             </button>
+
                             <button
                               type="button"
                               className="message-edit-save"
-                              onClick={saveEdit}
+                              onClick={() => void saveEdit()}
                               disabled={!editContent.trim()}
                             >
                               Save
@@ -691,26 +917,31 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                           </div>
                         </div>
                       ) : (
-                        msg.content && <p>{msg.content}</p>
+                        message.content && <p>{message.content}</p>
                       )}
 
                       <span className="message-time">
-                        {new Date(msg.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {new Date(message.created_at).toLocaleTimeString(
+                          [],
+                          {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          },
+                        )}
                       </span>
                     </div>
                   </div>
                 );
               })
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
           {pendingImage && (
             <div className="chat-staged-image">
               <img src={pendingImage.previewUrl} alt="Selected" />
+
               <button
                 type="button"
                 className="chat-staged-remove"
@@ -749,15 +980,18 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
                 uploading ? 'Uploading image…' : 'Type your message…'
               }
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(event) => setNewMessage(event.target.value)}
               disabled={sending || uploading}
             />
 
             <button
               type="submit"
               disabled={
-                (!newMessage.trim() && !pendingImage) || sending || uploading
+                (!newMessage.trim() && !pendingImage) ||
+                sending ||
+                uploading
               }
+              aria-label="Send message"
             >
               <Send size={18} />
             </button>
@@ -785,20 +1019,24 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         </svg>
       </button>
 
-      {/* ============ Delete this message confirm — WITH MAYA BIRD ICON ============ */}
+      {/* Delete one message confirmation */}
       {deletingMessageId && (
         <div
           className="talk-delete-overlay"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setDeletingMessageId(null);
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setDeletingMessageId(null);
+            }
           }}
         >
           <div className="talk-delete-dialog" role="alertdialog">
             <div className="talk-delete-icon">
               <img src={DeleteMessage} alt="" aria-hidden="true" />
             </div>
+
             <h3>Delete this message?</h3>
             <p>This message will be permanently deleted.</p>
+
             <div className="talk-delete-actions">
               <button
                 type="button"
@@ -807,10 +1045,11 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
               >
                 Cancel
               </button>
+
               <button
                 type="button"
                 className="talk-delete-confirm"
-                onClick={confirmDeleteMessage}
+                onClick={() => void confirmDeleteMessage()}
               >
                 Yes, delete
               </button>
@@ -819,12 +1058,15 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
         </div>
       )}
 
-      {/* ============ Delete entire conversation confirm — WITH MAYA BIRD ICON ============ */}
+      {/* Delete entire conversation confirmation */}
       {showDeleteAllConfirm && (
         <div
           className="talk-delete-overlay"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget && !deletingAll) {
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              !deletingAll
+            ) {
               setShowDeleteAllConfirm(false);
             }
           }}
@@ -833,11 +1075,14 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
             <div className="talk-delete-icon">
               <img src={DeleteMessage} alt="" aria-hidden="true" />
             </div>
+
             <h3>Delete entire conversation?</h3>
+
             <p>
               All messages between you and the admin will be permanently
               deleted, including shared images. This action cannot be undone.
             </p>
+
             <div className="talk-delete-actions">
               <button
                 type="button"
@@ -847,10 +1092,11 @@ export default function TalkToAdmin({ farmerId, adminId }: TalkToAdminProps) {
               >
                 Cancel
               </button>
+
               <button
                 type="button"
                 className="talk-delete-confirm"
-                onClick={confirmDeleteAll}
+                onClick={() => void confirmDeleteAll()}
                 disabled={deletingAll}
               >
                 {deletingAll ? 'Deleting…' : 'Yes, delete all'}
