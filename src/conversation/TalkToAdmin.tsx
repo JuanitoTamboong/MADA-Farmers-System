@@ -1,5 +1,4 @@
-
- // src/conversation/TalkToAdmin.tsx
+// src/conversation/TalkToAdmin.tsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Send, ImagePlus, Trash2, Pencil, X } from 'lucide-react';
 import { supabase } from '../supabase/supabase-client';
@@ -157,6 +156,7 @@ export default function TalkToAdmin({
   }, [adminId]);
 
   // ---------- Admin online presence ----------
+  // Same auto-reconnect pattern as the message subscription.
 
   useEffect(() => {
     if (!activeAdminId) {
@@ -165,11 +165,12 @@ export default function TalkToAdmin({
     }
 
     let cancelled = false;
-
-    // Listen to the shared channel. The farmer does not publish presence here.
-    const presenceChannel = supabase.channel(PRESENCE_CHANNEL);
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+    let presenceChannel: ReturnType<typeof supabase.channel> | null = null;
 
     const updateAdminStatus = () => {
+      if (!presenceChannel) return;
       const state = presenceChannel.presenceState();
 
       const online = Object.values(state)
@@ -184,28 +185,48 @@ export default function TalkToAdmin({
       }
     };
 
-    presenceChannel
-      .on('presence', { event: 'sync' }, updateAdminStatus)
-      .on('presence', { event: 'join' }, updateAdminStatus)
-      .on('presence', { event: 'leave' }, updateAdminStatus)
-      .subscribe((status) => {
-        if (cancelled) return;
+    const connect = () => {
+      if (cancelled) return;
 
-        if (status === 'SUBSCRIBED') {
-          updateAdminStatus();
-        } else if (
-          status === 'CHANNEL_ERROR' ||
-          status === 'TIMED_OUT' ||
-          status === 'CLOSED'
-        ) {
-          setAdminOnline(false);
-          console.error('Admin presence connection status:', status);
-        }
-      });
+      presenceChannel = supabase.channel(PRESENCE_CHANNEL);
+
+      presenceChannel
+        .on('presence', { event: 'sync' }, updateAdminStatus)
+        .on('presence', { event: 'join' }, updateAdminStatus)
+        .on('presence', { event: 'leave' }, updateAdminStatus)
+        .subscribe((status) => {
+          if (cancelled) return;
+
+          if (status === 'SUBSCRIBED') {
+            attempt = 0;
+            updateAdminStatus();
+          } else if (
+            status === 'CHANNEL_ERROR' ||
+            status === 'TIMED_OUT' ||
+            status === 'CLOSED'
+          ) {
+            setAdminOnline(false);
+            console.error('Admin presence connection status:', status);
+
+            // Clean up the dead channel and try again
+            if (presenceChannel) {
+              void supabase.removeChannel(presenceChannel);
+              presenceChannel = null;
+            }
+
+            attempt += 1;
+            const delay = Math.min(1000 * 2 ** attempt, 30000);
+            retryTimer = setTimeout(connect, delay);
+          }
+        });
+    };
+
+    connect();
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(presenceChannel);
+      if (retryTimer) clearTimeout(retryTimer);
+      if (presenceChannel) void supabase.removeChannel(presenceChannel);
     };
   }, [activeAdminId]);
 
@@ -221,6 +242,9 @@ export default function TalkToAdmin({
     if (!isOpen || !farmerId || !activeAdminId) return;
 
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+    let subscription: ReturnType<typeof supabase.channel> | null = null;
 
     const fetchMessages = async () => {
       setLoading(true);
@@ -283,91 +307,116 @@ export default function TalkToAdmin({
 
     void fetchMessages();
 
-    const subscription = supabase
-      .channel(`messages-${farmerId}-${activeAdminId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
-          const incoming = payload.new as Message;
+    const setupSubscription = () => {
+      if (cancelled) return;
 
-          const belongsToThisChat =
-            (incoming.sender_id === farmerId &&
-              incoming.receiver_id === activeAdminId) ||
-            (incoming.sender_id === activeAdminId &&
-              incoming.receiver_id === farmerId);
+      subscription = supabase
+        .channel(`messages-${farmerId}-${activeAdminId}-${Date.now()}`)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages' },
+          (payload) => {
+            const incoming = payload.new as Message;
 
-          if (!belongsToThisChat) return;
+            const belongsToThisChat =
+              (incoming.sender_id === farmerId &&
+                incoming.receiver_id === activeAdminId) ||
+              (incoming.sender_id === activeAdminId &&
+                incoming.receiver_id === farmerId);
 
-          if (incoming.image_path) {
-            const path = incoming.image_path;
+            if (!belongsToThisChat) return;
 
-            setImageUrls((previous) => {
-              if (previous[path]) return previous;
+            if (incoming.image_path) {
+              const path = incoming.image_path;
 
-              void signPaths(CHAT_IMAGE_BUCKET, [path]).then((urls) => {
-                if (urls[path]) {
-                  setImageUrls((current) => ({
-                    ...current,
-                    ...urls,
-                  }));
-                }
+              setImageUrls((previous) => {
+                if (previous[path]) return previous;
+
+                void signPaths(CHAT_IMAGE_BUCKET, [path]).then((urls) => {
+                  if (urls[path]) {
+                    setImageUrls((current) => ({
+                      ...current,
+                      ...urls,
+                    }));
+                  }
+                });
+
+                return previous;
               });
-
-              return previous;
-            });
-          }
-
-          setMessages((previous) => {
-            if (previous.some((message) => message.id === incoming.id)) {
-              return previous;
             }
 
-            const temp = previous.find(
-              (message) =>
-                pendingTempIdsRef.current.has(message.id) &&
-                message.sender_id === incoming.sender_id &&
-                message.receiver_id === incoming.receiver_id &&
-                (message.content || '') === (incoming.content || '') &&
-                (message.image_path ?? null) ===
-                  (incoming.image_path ?? null),
-            );
+            setMessages((previous) => {
+              if (previous.some((message) => message.id === incoming.id)) {
+                return previous;
+              }
 
-            if (temp) {
-              pendingTempIdsRef.current.delete(temp.id);
-
-              return previous.map((message) =>
-                message.id === temp.id ? incoming : message,
+              const temp = previous.find(
+                (message) =>
+                  pendingTempIdsRef.current.has(message.id) &&
+                  message.sender_id === incoming.sender_id &&
+                  message.receiver_id === incoming.receiver_id &&
+                  (message.content || '') === (incoming.content || '') &&
+                  (message.image_path ?? null) ===
+                    (incoming.image_path ?? null),
               );
+
+              if (temp) {
+                pendingTempIdsRef.current.delete(temp.id);
+
+                return previous.map((message) =>
+                  message.id === temp.id ? incoming : message,
+                );
+              }
+
+              return [...previous, incoming];
+            });
+
+            if (
+              incoming.receiver_id === farmerId &&
+              incoming.read_at === null
+            ) {
+              void supabase
+                .from('messages')
+                .update({ read_at: new Date().toISOString() })
+                .eq('id', incoming.id);
+            }
+          },
+        )
+        .subscribe((status) => {
+          if (cancelled) return;
+
+          if (status === 'SUBSCRIBED') {
+            attempt = 0;
+            // Re-fetch to catch anything that arrived while disconnected
+            void fetchMessages();
+          } else if (
+            status === 'CHANNEL_ERROR' ||
+            status === 'TIMED_OUT' ||
+            status === 'CLOSED'
+          ) {
+            console.error('Message subscription status:', status);
+
+            // Clean up the dead channel to prevent connection leaks
+            if (subscription) {
+              void supabase.removeChannel(subscription);
+              subscription = null;
             }
 
-            return [...previous, incoming];
-          });
+            // Exponential backoff: 2s, 4s, 8s, ... up to 30s
+            attempt += 1;
+            const delay = Math.min(1000 * 2 ** attempt, 30000);
 
-          if (
-            incoming.receiver_id === farmerId &&
-            incoming.read_at === null
-          ) {
-            void supabase
-              .from('messages')
-              .update({ read_at: new Date().toISOString() })
-              .eq('id', incoming.id);
+            retryTimer = setTimeout(setupSubscription, delay);
           }
-        },
-      )
-      .subscribe((status) => {
-        if (
-          status === 'CHANNEL_ERROR' ||
-          status === 'TIMED_OUT' ||
-          status === 'CLOSED'
-        ) {
-          console.error('Message subscription status:', status);
-        }
-      });
+        });
+    };
+
+    setupSubscription();
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(subscription);
+      if (retryTimer) clearTimeout(retryTimer);
+      if (subscription) void supabase.removeChannel(subscription);
     };
   }, [isOpen, farmerId, activeAdminId]);
 
